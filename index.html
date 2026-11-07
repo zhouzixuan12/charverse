@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d12">
+<title>角色宇宙</title>
+<style>
+:root{
+  --bg:#0b0d12; --bg2:#11141c; --panel:#161a24; --panel2:#1d2230;
+  --line:#262c3b; --text:#e8ebf4; --dim:#98a0b3; --dim2:#6b7385;
+  --acc:#6d8cff; --acc2:#9b7bff; --ok:#3ecf8e; --warn:#f5a524; --bad:#f04d5e;
+  --r:14px; --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--text);
+  font:15px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  overscroll-behavior:none;
+}
+#app{min-height:100%;display:flex;flex-direction:column}
+button{font:inherit;color:inherit;background:none;border:none}
+input,textarea,select{font:inherit;color:var(--text)}
+input[type=range]{accent-color:var(--acc)}
+input[type=checkbox]{accent-color:var(--acc)}
+a{color:var(--acc);text-decoration:none}
+::-webkit-scrollbar{width:0;height:0}
+
+/* ---------- 通用 ---------- */
+.screen{flex:1;display:flex;flex-direction:column;min-height:100dvh}
+.pad{padding:16px}
+.topbar{
+  position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;
+  padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 10px;
+  background:linear-gradient(180deg,rgba(11,13,18,.96),rgba(11,13,18,.82));
+  backdrop-filter:blur(12px);border-bottom:1px solid rgba(38,44,59,.6)
+}
+.topbar h1{font-size:17px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.icon-btn{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:19px;color:var(--dim);flex:none}
+.icon-btn:active{background:var(--panel2)}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:10px 16px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);
+  font-size:14px;font-weight:500;color:var(--text);cursor:pointer;transition:.15s
+}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:linear-gradient(135deg,var(--acc),var(--acc2));border-color:transparent;color:#fff}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--bad);border-color:rgba(240,77,94,.3)}
+.btn.sm{padding:7px 12px;font-size:13px;border-radius:10px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-size:13px;color:var(--dim)}
+.field .hint{font-size:12px;color:var(--dim2);line-height:1.45}
+.input,.textarea,.select{
+  width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:12px;
+  padding:11px 13px;outline:none;font-size:14px
+}
+.input:focus,.textarea:focus,.select:focus{border-color:rgba(109,140,255,.6)}
+.textarea{resize:vertical;min-height:84px;line-height:1.55}
+.row{display:flex;gap:10px;align-items:center}
+.row.wrap{flex-wrap:wrap}
+.spacer{flex:1}
+.muted{color:var(--dim)}
+.small{font-size:12.5px}
+.hr{height:1px;background:var(--line);margin:16px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.chip{
+  display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;
+  background:var(--panel2);color:var(--dim);font-size:12px;border:1px solid var(--line)
+}
+.chip.on{background:rgba(109,140,255,.16);border-color:rgba(109,140,255,.45);color:#c3d0ff}
+.empty{padding:48px 20px;text-align:center;color:var(--dim2);font-size:14px}
+.empty .big{display:block;font-size:34px;margin-bottom:10px;opacity:.7}
+
+/* ---------- 首页 ---------- */
+.hero{padding:calc(env(safe-area-inset-top,0px) + 24px) 18px 6px}
+.hero h2{font-size:24px;font-weight:700;letter-spacing:.5px}
+.hero p{color:var(--dim);font-size:13px;margin-top:4px}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 16px}
+.mode{
+  position:relative;overflow:hidden;border-radius:18px;border:1px solid var(--line);
+  background:linear-gradient(150deg,var(--panel2),var(--panel));padding:16px 14px;min-height:112px;
+  display:flex;flex-direction:column;justify-content:space-between;cursor:pointer
+}
+.mode:active{transform:scale(.98)}
+.mode .emoji{font-size:24px}
+.mode b{font-size:15.5px;display:block;margin-top:8px}
+.mode span{font-size:12px;color:var(--dim);line-height:1.4;display:block;margin-top:3px}
+.mode::after{content:"";position:absolute;right:-24px;top:-24px;width:84px;height:84px;border-radius:50%;background:radial-gradient(circle,rgba(109,140,255,.25),transparent 70%)}
+.section-title{display:flex;align-items:center;gap:8px;padding:10px 18px 6px;font-size:13px;color:var(--dim);font-weight:600}
+.section-title .spacer{flex:1}
+.recent{display:flex;flex-direction:column;gap:8px;padding:0 16px 24px}
+.recent-item{display:flex;gap:10px;align-items:center;padding:11px 12px;border-radius:14px;background:var(--panel);border:1px solid var(--line);cursor:pointer}
+.avatar{width:40px;height:40px;border-radius:12px;object-fit:cover;background:var(--panel2);flex:none;display:grid;place-items:center;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.avatar.lg{width:52px;height:52px;border-radius:15px}
+
+/* ---------- 聊天 ---------- */
+.chat-body{flex:1;overflow-y:auto;padding:12px 12px 8px;display:flex;flex-direction:column;gap:10px;position:relative}
+.chat-bg{position:absolute;inset:0;background-size:cover;background-position:center 18%;filter:blur(22px) brightness(.55) saturate(.85);opacity:.35;pointer-events:none;z-index:0}
+.chat-body > .msg,.chat-body > .group-block,.chat-body > .chat-empty{position:relative;z-index:1}
+.msg{display:flex;gap:8px;max-width:100%}
+.msg .avatar{width:34px;height:34px;border-radius:10px;margin-top:2px}
+.msg .bubble{
+  max-width:calc(100% - 50px);padding:10px 13px;border-radius:15px;font-size:14.5px;
+  white-space:pre-wrap;word-break:break-word;line-height:1.6
+}
+.msg.user{flex-direction:row-reverse}
+.msg.user .bubble{background:linear-gradient(135deg,#3d55c9,#5b46c9);border-bottom-right-radius:5px}
+.msg.assistant .bubble{background:var(--panel);border:1px solid var(--line);border-bottom-left-radius:5px}
+.msg .name{font-size:11.5px;color:var(--dim);margin:0 0 3px 2px}
+.msg.streaming .bubble::after{content:"▍";animation:blink 1s steps(2) infinite;color:var(--acc)}
+@keyframes blink{50%{opacity:0}}
+.chat-empty{margin:auto;text-align:center;color:var(--dim2);font-size:13.5px;padding:30px}
+.chat-empty .big{font-size:38px;display:block;margin-bottom:10px;opacity:.6}
+.composer{
+  position:sticky;bottom:0;display:flex;gap:8px;align-items:flex-end;
+  padding:8px 10px calc(8px + var(--safe-b));
+  background:linear-gradient(180deg,rgba(11,13,18,.5),rgba(11,13,18,.97) 35%);
+  backdrop-filter:blur(10px);border-top:1px solid rgba(38,44,59,.5)
+}
+.composer .textarea{min-height:44px;max-height:132px;border-radius:22px;padding:11px 15px;resize:none}
+.send{
+  width:44px;height:44px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:18px;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff
+}
+.send.stop{background:linear-gradient(135deg,#e2555f,#b03a49)}
+.send[disabled]{opacity:.4;pointer-events:none}
+
+/* ---------- 列表 ---------- */
+.list{display:flex;flex-direction:column;gap:10px;padding:12px 16px 24px}
+.list-item{display:flex;gap:12px;align-items:center;padding:12px;border-radius:15px;background:var(--panel);border:1px solid var(--line);cursor:pointer}
+.list-item:active{background:var(--panel2)}
+.list-item .grow{flex:1;min-width:0}
+.list-item .title{font-size:14.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list-item .sub{font-size:12px;color:var(--dim);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- 世界 ---------- */
+.world-head{padding:14px 16px 6px}
+.world-head h2{font-size:19px}
+.world-head p{color:var(--dim);font-size:13px;margin-top:4px;white-space:pre-wrap}
+.char-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:12px 16px 24px}
+.char-card{position:relative;border-radius:16px;overflow:hidden;background:var(--panel);border:1px solid var(--line);cursor:pointer}
+.char-card .pic{width:100%;aspect-ratio:3/4;display:block;object-fit:cover;background:var(--panel2)}
+.char-card .meta{padding:9px 10px}
+.char-card .meta b{font-size:14px;display:block}
+.char-card .meta span{font-size:11.5px;color:var(--dim);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.char-card .sel{position:absolute;right:8px;top:8px;width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,.7);background:rgba(0,0,0,.35)}
+.char-card.selected{outline:2px solid var(--acc);outline-offset:-2px}
+.char-card.selected .sel{background:var(--acc);border-color:var(--acc)}
+
+/* ---------- 人生模拟 ---------- */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 10px}
+.stat span{font-size:11px;color:var(--dim);display:block}
+.stat b{font-size:16px;font-weight:600;display:block;margin-top:2px}
+
+/* ---------- 弹层 ---------- */
+#modal-root{position:fixed;inset:0;z-index:100;pointer-events:none}
+.overlay{position:fixed;z-index:200;inset:0;background:rgba(0,0,0,.62);display:flex;align-items:flex-end;pointer-events:auto;animation:fade .18s}
+.sheet{
+  width:100%;max-height:88dvh;overflow-y:auto;background:var(--bg2);
+  border-radius:20px 20px 0 0;border-top:1px solid var(--line);
+  padding:16px 16px calc(18px + var(--safe-b));animation:up .22s
+}
+.sheet h3{font-size:16px;margin-bottom:14px}
+.sheet .foot{display:flex;gap:10px;margin-top:18px}
+.sheet .foot .btn{flex:1}
+@keyframes fade{from{opacity:0}}
+@keyframes up{from{transform:translateY(30px);opacity:.4}}
+.toast{
+  position:fixed;left:50%;bottom:calc(90px + var(--safe-b));transform:translateX(-50%) translateY(8px);
+  background:rgba(28,33,45,.98);border:1px solid var(--line);border-radius:12px;
+  padding:10px 16px;font-size:13.5px;max-width:86vw;opacity:0;pointer-events:none;transition:.2s;z-index:200;text-align:center
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* 美化面板 */
+.beauty-frame{position:fixed;inset:0;z-index:90;background:#000;display:flex;flex-direction:column}
+.beauty-frame .bar{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 8px) 12px 8px;background:var(--bg2)}
+.beauty-frame iframe{flex:1;width:100%;border:0;background:#000}
+/* 战斗 */
+.battle{position:fixed;inset:0;z-index:80;background:radial-gradient(circle at 50% 20%,#1a1430,#07080c 70%);display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 10px) 14px calc(14px + var(--safe-b))}
+.battle .fighters{display:flex;justify-content:space-between;gap:8px;margin-top:8px}
+.fighter{flex:1;text-align:center}
+.fighter .pic{width:88px;height:112px;border-radius:12px;margin:0 auto;display:block;object-fit:cover;background:var(--panel2)}
+.fighter b{display:block;font-size:13px;margin-top:6px}
+.hp{height:7px;border-radius:4px;background:#2a2f40;margin-top:6px;overflow:hidden}
+.hp i{display:block;height:100%;background:linear-gradient(90deg,#43d17a,#9de24f);transition:width .3s}
+.hp.ai i{background:linear-gradient(90deg,#ff5d6c,#ff9a5a)}
+.battle-log{flex:1;overflow-y:auto;margin:12px 0;display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--dim)}
+.battle-log p{background:rgba(255,255,255,.04);border-radius:10px;padding:7px 10px}
+.battle-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+
+/* ---------- 亮色主题 ---------- */
+:root[data-theme="light"]{
+  --bg:#f4f5f9; --bg2:#ffffff; --panel:#ffffff; --panel2:#eef0f6;
+  --line:#dfe3ec; --text:#161a22; --dim:#5d6472; --dim2:#8b93a3;
+  --acc:#4a67e0; --acc2:#7a5ae0;
+}
+:root[data-theme="light"] .topbar{background:linear-gradient(180deg,rgba(244,245,249,.97),rgba(244,245,249,.85))}
+:root[data-theme="light"] .composer{background:linear-gradient(180deg,rgba(244,245,249,.5),rgba(244,245,249,.97) 35%)}
+:root[data-theme="light"] .msg.assistant .bubble{background:#fff}
+:root[data-theme="light"] .mode{background:linear-gradient(150deg,#fff,#f2f4fa)}
+:root[data-theme="light"] .toast{background:#fff;color:#161a22}
+:root[data-theme="light"] .beauty-frame,.beauty-frame iframe{background:#111}
+
+/* 立绘部位热区 */
+#zones{position:absolute;inset:0}
+.pzone{
+  position:absolute;transform:translate(-50%,-50%);
+  display:flex;align-items:center;justify-content:center;
+  padding:0;border-radius:9px;cursor:pointer;
+  background:transparent;
+  border:1px dashed rgba(150,170,255,.65);
+  color:#e6ecff;font-size:9.5px;line-height:1;letter-spacing:.5px;
+  backdrop-filter:blur(0);
+  transition:background .15s,border-color .15s;
+  overflow:visible;white-space:nowrap;
+}
+.pzone span{background:rgba(12,16,28,.78);padding:2px 5px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.pzone:active,.pzone:hover{background:rgba(109,140,255,.28);border-color:rgba(190,205,255,.95)}
+
+/* 立绘状态条 */
+.pstate-bar{display:flex;gap:8px;overflow-x:auto;padding:8px 10px calc(10px + env(safe-area-inset-bottom,0px));background:#0f131c;border-top:1px solid var(--line)}
+.pstate{position:relative;flex:none;width:62px;padding:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel2);display:flex;flex-direction:column}
+.pstate img{width:100%;height:78px;object-fit:cover;display:block}
+.pstate span{font-size:10px;padding:2px 0 4px;color:var(--dim)}
+.pstate-add{justify-content:center;align-items:center;min-height:98px;border-style:dashed;color:var(--dim)}
+.pstate-add span{font-size:20px;line-height:1}
+.pstate-add i{font-style:normal;font-size:10px;padding-bottom:4px}
+.beauty-frame .bar .btn{padding:6px 10px;font-size:13px;white-space:nowrap;flex:none}
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast" class="toast"></div>
+<div id="modal-root"></div>
+<script>
+(()=>{var Je=Object.defineProperty;var F=(t,a,e)=>()=>{if(e)throw e[0];try{return t&&(a=t(t=0)),a}catch(n){throw e=[n],n}};var K=(t,a)=>{for(var e in a)Je(t,e,{get:a[e],enumerable:!0})};function Fe(){return location.hash.replace(/^#\/?/,"")||"home"}function w(t){let a="#/"+String(t).replace(/^#?\/?/,"");if(location.hash===a)return ut();history.pushState(null,"",a),ut()}function ut(){It&&It(Fe())}function se(t){It=t,window.addEventListener("popstate",ut),window.addEventListener("hashchange",ut),ut()}var It,D=F(()=>{It=null});function ft(){return xt||(xt=new Promise((t,a)=>{let e=indexedDB.open(Ke,1);e.onupgradeneeded=()=>{let n=e.result;for(let o of oe)if(!n.objectStoreNames.contains(o)){let s=n.createObjectStore(o,{keyPath:"id"});o==="messages"&&s.createIndex("chatId","chatId",{unique:!1})}},e.onsuccess=()=>t(e.result),e.onerror=()=>a(e.error)}),xt)}function $t(t,a,e){return ft().then(n=>new Promise((o,s)=>{let i=n.transaction(t,a),r=i.objectStore(t),l;try{l=e(r)}catch(p){s(p);return}i.oncomplete=()=>o(l&&l.result!==void 0?l.result:l),i.onerror=()=>s(i.error),i.onabort=()=>s(i.error)}))}function b(t,a){return $t(t,"readwrite",e=>(e.put(a),a))}function A(t,a){return $t(t,"readonly",e=>e.get(a)).then(e=>e||null)}function x(t){return $t(t,"readonly",a=>a.getAll()).then(a=>a||[])}function B(t,a){return $t(t,"readwrite",e=>(e.delete(a),!0))}async function ie(t,a,e){let n=await ft();return new Promise((o,s)=>{let i=n.transaction(t,"readonly").objectStore(t).index(a).getAll(e);i.onsuccess=()=>o(i.result||[]),i.onerror=()=>s(i.error)})}async function re(){let t=await ft();for(let a of oe)t.objectStoreNames.contains(a)&&await new Promise((e,n)=>{let o=t.transaction(a,"readwrite");o.objectStore(a).clear(),o.oncomplete=e,o.onerror=()=>n(o.error)})}var Ke,oe,xt,P=F(()=>{Ke="corverse",oe=["chars","worlds","chats","messages","libs"],xt=null});var jt={};K(jt,{avatarHTML:()=>H,confirmBox:()=>M,download:()=>Z,esc:()=>d,fmtTime:()=>Ze,pickFile:()=>T,promptBox:()=>at,sheet:()=>k,toast:()=>f,uid:()=>j});function d(t){return String(t??"").replace(/[&<>"']/g,a=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[a])}function j(t=""){return t+Date.now().toString(36)+Math.random().toString(36).slice(2,8)}function Ze(t){let a=new Date(t||Date.now()),e=n=>String(n).padStart(2,"0");return`${a.getFullYear()}-${e(a.getMonth()+1)}-${e(a.getDate())} ${e(a.getHours())}:${e(a.getMinutes())}`}function f(t,a=2200){let e=document.getElementById("toast");e&&(e.textContent=t,e.classList.add("show"),clearTimeout(le),le=setTimeout(()=>e.classList.remove("show"),a))}function k(t){let a=document.getElementById("modal-root"),e=document.createElement("div");e.className="overlay",e.innerHTML=`<div class="sheet">${t}</div>`,a.appendChild(e);let n=()=>e.remove();return e.addEventListener("click",o=>{o.target===e&&n()}),{el:e.querySelector(".sheet"),close:n}}function M(t,a="确定",e=!1){return new Promise(n=>{let{el:o,close:s}=k(`
+      <h3>${d(t)}</h3>
+      <div class="foot">
+        <button class="btn ghost" data-no>取消</button>
+        <button class="btn ${e?"danger":"primary"}" data-yes>${d(a)}</button>
+      </div>`);o.querySelector("[data-no]").onclick=()=>{s(),n(!1)},o.querySelector("[data-yes]").onclick=()=>{s(),n(!0)}})}function at(t,a="",e="",n=!1){return new Promise(o=>{let{el:s,close:i}=k(`
+      <h3>${d(t)}</h3>
+      <div class="field">${n?`<textarea class="textarea" data-input placeholder="${d(e)}">${d(a)}</textarea>`:`<input class="input" data-input value="${d(a)}" placeholder="${d(e)}">`}</div>
+      <div class="foot">
+        <button class="btn ghost" data-no>取消</button>
+        <button class="btn primary" data-yes>确定</button>
+      </div>`),r=s.querySelector("[data-input]");setTimeout(()=>r.focus(),60),s.querySelector("[data-no]").onclick=()=>{i(),o(null)},s.querySelector("[data-yes]").onclick=()=>{let l=r.value.trim();i(),o(l||null)}})}function H(t,a="avatar"){let e=t&&(t.avatar||t.portrait);if(e)return`<div class="${a}"><img src="${e}" alt=""></div>`;let n=t&&t.name||"?",o=[...n].reduce((s,i)=>s+i.charCodeAt(0),0)%360;return`<div class="${a}" style="background:linear-gradient(135deg,hsl(${o} 55% 42%),hsl(${(o+50)%360} 55% 28%));color:#fff;font-weight:600">${d(n.slice(0,1))}</div>`}function Z(t,a,e="application/json"){let n=new Blob([a],{type:e}),o=URL.createObjectURL(n),s=document.createElement("a");s.href=o,s.download=t,document.body.appendChild(s),s.click(),s.remove(),setTimeout(()=>URL.revokeObjectURL(o),4e3)}function T(t){return new Promise(a=>{let e=document.createElement("input");e.type="file",e.accept=t||"",e.multiple=!1,e.onchange=()=>a(e.files&&e.files[0]?e.files[0]:null),e.click()})}var le,C=F(()=>{le=null});function ce(t){return function(){t|=0,t=t+1831565813|0;let a=Math.imul(t^t>>>15,1|t);return a=a+Math.imul(a^a>>>7,61|a)^a,((a^a>>>14)>>>0)/4294967296}}function mt(t,a){return a[Math.floor(t()*a.length)]}function _(t=1){let a=ce(t||1),e=a()>.5?"f":"m";return{seed:t,gender:e,hair:e==="m"?mt(a,[3,4,7,5]):mt(a,[0,1,2,3,5,6,7]),outfit:mt(a,[0,1,2,3,4,5]),palette:Math.floor(a()*kt.length),accessory:mt(a,[-1,-1,0,1,2]),eyeStyle:mt(a,["normal","normal","normal","gold","violet"]),size:300}}function We(t={}){let a=t.seed||1,e=ce(a),n=t.gender==="m"?"m":"f",o=kt[(t.palette==null?Math.floor(e()*kt.length):t.palette)%kt.length],s=t.eyeStyle&&Ve[t.eyeStyle],i=s?{...o,eye:s}:o,r=t.hair==null?n==="m"?3:0:t.hair,l=t.outfit==null?Math.floor(e()*6):t.outfit,p=t.accessory==null?-1:t.accessory,an=t.anatomy||An(a),ex=t.exposure==null?0:t.exposure,expr=t.expr==null?0:t.expr,bgv=t.bg==null?0:t.bg,mkv=t.mark==null?-1:t.mark,hak=t.hairAcc==null?-1:t.hairAcc,y=t.size||300,h="g"+a+"x"+ex+"e"+expr+"b"+bgv;return`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 420" width="${y}" height="${Math.round(y*1.4)}">
+<defs>
+  <linearGradient id="${h}bg" x1="0" y1="0" x2="0.6" y2="1">
+    <stop offset="0" stop-color="${i.bg1}"/><stop offset="1" stop-color="${i.bg2}"/>
+  </linearGradient>
+  <radialGradient id="${h}glow" cx="0.5" cy="0.38" r="0.55">
+    <stop offset="0" stop-color="${i.accent}" stop-opacity="0.28"/><stop offset="1" stop-color="${i.accent}" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="${h}skin" x1="0.2" y1="0" x2="0.8" y2="1">
+    <stop offset="0" stop-color="${i.skin}"/><stop offset="1" stop-color="${i.skin2}"/>
+  </linearGradient>
+  <linearGradient id="${h}hair" x1="0.1" y1="0" x2="0.9" y2="1">
+    <stop offset="0" stop-color="${i.hair2}"/><stop offset="0.55" stop-color="${i.hair}"/><stop offset="1" stop-color="${i.hair2}"/>
+  </linearGradient>
+  <linearGradient id="${h}cloth" x1="0" y1="0" x2="0.4" y2="1">
+    <stop offset="0" stop-color="${i.cloth}"/><stop offset="1" stop-color="${i.cloth2}"/>
+  </linearGradient>
+  <radialGradient id="${h}iris" cx="0.4" cy="0.35" r="0.75">
+    <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/><stop offset="0.35" stop-color="${i.eye}"/><stop offset="1" stop-color="#1a1626"/>
+  </radialGradient>
+  <filter id="${h}soft" x="-20%" y="-20%" width="140%" height="140%">
+    <feGaussianBlur stdDeviation="9"/>
+  </filter>
+</defs>
+<rect width="300" height="420" fill="url(#${h}bg)"/>
+<circle cx="150" cy="150" r="150" fill="url(#${h}glow)"/>
+${zBg(i,bgv)}
+${oa(r,i,h,n)}
+${zDraw(l,i,h,n,an,ex)}${zMark(mkv,i,h)}
+${Qe(i,h)}
+<g>
+  ${Xe(i,h,n)}
+  ${Ye(i,h)}
+  ${aa(i,n)}
+  ${ta(i,h,n)}
+  ${ea(i,n)}
+  ${na(i,n,expr)}
+</g>
+${ra(r,i,h,n)}
+${la(p,i,h)}${zHairAcc(hak,i,h,n)}
+<rect width="300" height="420" fill="url(#${h}bg)" opacity="0.06"/>
+</svg>`}function S(t={}){return"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(We(t))}function Xe(t,a,e){let n=e==="m"?112:104,o=e==="m"?.9:1;return`<path d="M150 82
+    C ${150+n*.52} 82, ${150+n*.5} 112, ${150+n*.46} 148
+    C ${150+n*.42} 182, ${150+n*.2*o} 210, 150 ${212+(e==="m"?2:4)}
+    C ${150-n*.2*o} 210, ${150-n*.42} 182, ${150-n*.46} 148
+    C ${150-n*.5} 112, ${150-n*.52} 82, 150 82 Z"
+    fill="url(#${a}skin)"/>
+    <path d="M150 82 C ${150+n*.52} 82, ${150+n*.5} 112, ${150+n*.46} 148
+      C ${150+n*.42} 182, ${150+n*.2} 210, 150 212 L150 82 Z" fill="#000" opacity="0.04"/>
+    <path d="M${150-n*.46} 150 C ${150-n*.42} 182, ${150-n*.2} 206, 150 208
+      C ${150-n*.26} 196, ${150-n*.4} 176, ${150-n*.44} 150 Z" fill="${t.skin2}" opacity="0.12"/>`}function Ye(t,a){return`<ellipse cx="97" cy="152" rx="10" ry="15" fill="url(#${a}skin)"/>
+  <ellipse cx="203" cy="152" rx="10" ry="15" fill="url(#${a}skin)"/>
+  <path d="M94 146 q5 6 2 14" stroke="${t.skin2}" stroke-width="2" fill="none" opacity="0.7"/>`}function Qe(t,a){return`<path d="M132 200 h36 v42 q-18 10 -36 0 z" fill="${t.skin2}"/>
+  <path d="M132 200 h36 v13 q-18 8 -36 0 z" fill="#000" opacity="0.12"/>
+  <ellipse cx="150" cy="243" rx="26" ry="8" fill="#000" opacity="0.10"/>`}function ta(t,a,e){let o=e==="m"?.72:1,s=i=>{let r=16*o;return`<path d="M${i-r} 150 q${r} ${-13*o} ${r*2} 0 q${-r} ${9*o} ${-r*2} 0 z" fill="#fff"/>
+    <circle cx="${i}" cy="151" r="${9.5*o}" fill="url(#${a}iris)"/>
+    <circle cx="${i}" cy="151" r="${3.6*o}" fill="#151022"/>
+    <circle cx="${i-3*o}" cy="147" r="${2.8*o}" fill="#fff" opacity="0.95"/>
+    <circle cx="${i+4*o}" cy="154" r="${1.4*o}" fill="#fff" opacity="0.7"/>
+    <circle cx="${i}" cy="151" r="${9.5*o}" fill="none" stroke="#3a2a3c" stroke-width="1.2" opacity="0.55"/>
+    <path d="M${i-r-1} 149 q${r+1} ${-14*o} ${r*2+2} 1" stroke="#241a26" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+    <path d="M${i-r+3} ${150+7*o} q${r-3} ${4*o} ${r*2-6} 0" stroke="#c98f8f" stroke-width="1.1" fill="none" opacity="0.45"/>
+    <path d="M${i+(i<150?-12:12)} 144 l${i<150?-7:7} -5" stroke="#241a26" stroke-width="2.4" stroke-linecap="round"/>`};return s(126)+s(174)}function ea(t,a){let n=a==="m"?4.6:3.6;return`<path d="M110 130 q14 -7 30 -1" stroke="${t.hair}" stroke-width="${n}" fill="none" stroke-linecap="round" opacity="0.9"/>
+  <path d="M160 129 q16 -6 30 2" stroke="${t.hair}" stroke-width="${n}" fill="none" stroke-linecap="round" opacity="0.9"/>`}function aa(t,a){let e=a==="m"?.1:.22;return`<ellipse cx="112" cy="172" rx="14" ry="8" fill="#ff7a94" opacity="${e}"/>
+  <ellipse cx="188" cy="172" rx="14" ry="8" fill="#ff7a94" opacity="${e}"/>`}function na(t,a,e){const m=["M141 188 q9 7 18 0","M140 187 q10 9 20 0","M140 188 h20","M144 189 q6 5 12 0","M140 190 q10 -6 20 1","M141 188 q9 11 18 -2"][e%6]||"M141 188 q9 7 18 0";return`<path d="M150 164 q3 6 -1 9" stroke="${t.skin2}" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.9"/>
+  <path d="${m}" stroke="#b8576b" stroke-width="2.8" fill="none" stroke-linecap="round"/>`}function sa(t,a,e,n){let o=n==="m"?100:88,s=`<path d="M150 238
+    C 116 238, 84 252, ${150-o+12} 302
+    L ${150-o} 420 L ${150+o} 420 L ${150+o-12} 302
+    C 216 252, 184 238, 150 238 Z"
+    fill="url(#${e}cloth)"/>
+    <path d="M150 238 C 120 238, 92 250, ${150-o+18} 296 L ${150-o+4} 420 L 150 420 Z" fill="#fff" opacity="0.05"/>`,i={0:`<path d="M132 252 q18 20 36 0 q-8 3 -18 3 q-10 0 -18 -3 z" fill="${a.skin2}"/>
+        <path d="M130 254 q20 22 40 0" stroke="${a.cloth2}" stroke-width="3" fill="none" opacity="0.85"/>`,1:`<path d="M134 240 l16 24 l16 -24 l11 6 l-27 32 l-27 -32 z" fill="#f4f0e8"/>
+        <path d="M150 264 v62" stroke="${a.cloth2}" stroke-width="1.6" opacity="0.6"/>
+        <circle cx="150" cy="286" r="1.8" fill="${a.cloth2}" opacity="0.6"/><circle cx="150" cy="304" r="1.8" fill="${a.cloth2}" opacity="0.6"/>`,2:`<path d="M130 240 q20 26 40 0 l-7 36 q-13 9 -26 0 z" fill="${a.skin2}"/>
+        <path d="M130 240 q20 26 40 0" stroke="${a.cloth2}" stroke-width="4" fill="none"/>
+        <path d="M150 276 v74" stroke="${a.cloth2}" stroke-width="2" opacity="0.5" stroke-dasharray="4 5"/>`,3:`<path d="M116 246 q34 -24 68 0 q-8 18 -34 18 q-26 0 -34 -18 z" fill="${a.cloth2}"/>
+        <path d="M139 260 l-4 54 M161 260 l4 54" stroke="#eee" stroke-width="3" stroke-linecap="round"/>`,4:`<path d="M126 240 l24 38 l-14 26 l-24 -50 z" fill="${a.cloth2}"/>
+        <path d="M174 240 l-24 38 l14 26 l24 -50 z" fill="${a.cloth2}"/>
+        <path d="M150 278 v72" stroke="#fff" stroke-width="1.5" opacity="0.3"/>`,5:`<path d="M132 238 q18 10 36 0 l-6 22 q-12 7 -24 0 z" fill="${a.cloth2}"/>
+        <path d="M136 244 l14 10 l14 -10" stroke="#fff" stroke-width="2" fill="none" opacity="0.55"/>`,6:`<path d="M124 240 q26 0 26 26 l-8 54 l-18 0 z" fill="${a.cloth2}"/>
+        <path d="M176 240 q-26 0 -26 26 l8 54 l18 0 z" fill="${a.cloth2}" opacity="0.92"/>
+        <path d="M150 266 v74" stroke="${a.accent}" stroke-width="3" opacity="0.85"/>
+        <path d="M132 250 q18 8 36 0" stroke="${a.accent}" stroke-width="2" fill="none" opacity="0.6"/>`}[t]||"",r=`<path d="M${150-o+26} 340 q8 34 -2 66" stroke="#000" stroke-width="3" opacity="0.07" fill="none"/>
+    <path d="M${150+o-26} 340 q-8 34 2 66" stroke="#000" stroke-width="3" opacity="0.07" fill="none"/>
+    <path d="M150 306 q-10 40 0 80" stroke="#000" stroke-width="2" opacity="0.05" fill="none"/>`;return s+i+r+`<path d="M${150-o+12} 302 q${o} -16 ${o*2-24} 0" stroke="#000" stroke-width="9" opacity="0.10" fill="none"/>`}function oa(t,a,e,n){let o=`<path d="M150 70 C 204 70, 226 110, 222 168 C 218 232, 226 300, 210 372 L 90 372 C 74 300, 82 232, 78 168 C 74 110, 96 70, 150 70 Z" fill="url(#${e}hair)"/>`,s=`<path d="M150 74 C 202 74, 224 112, 220 160 C 216 198, 206 214, 200 224 L 100 224 C 94 214, 84 198, 80 160 C 76 112, 98 74, 150 74 Z" fill="url(#${e}hair)"/>`,i=`<path d="M104 150 q-34 60 -18 130 q20 -6 24 -46 q4 -40 8 -70 z" fill="url(#${e}hair)"/>
+    <path d="M196 150 q34 60 18 130 q-20 -6 -24 -46 q-4 -40 -8 -70 z" fill="url(#${e}hair)"/>`+o,r=s+`<circle cx="150" cy="66" r="26" fill="url(#${e}hair)"/><circle cx="150" cy="66" r="26" fill="#fff" opacity="0.05"/>`;return n==="m"?`<path d="M150 76 C 196 76, 220 108, 216 150 C 212 186, 206 200, 202 210 L 98 210 C 94 200, 88 186, 84 150 C 80 108, 104 76, 150 76 Z" fill="url(#${e}hair)"/>`:t===1?i:t===2?r:t===3?s:t===4?s+`<path d="M84 210 q-10 60 6 96 q10 -30 8 -60 z" fill="url(#${e}hair)"/>`:t===5?`<path d="M150 70 C 210 70, 236 116, 230 172 C 226 208, 236 240, 226 268 C 214 240, 224 220, 220 190 C 216 150, 212 120, 150 120 C 88 120, 84 150, 80 190 C 76 220, 86 240, 74 268 C 64 240, 74 208, 70 172 C 64 116, 90 70, 150 70 Z" fill="url(#${e}hair)"/>`+s:t===6?o+ia(a,e):t===7?o:t===8?o+`<circle cx="150" cy="70" r="28" fill="url(#${e}hair)"/>
+    <path d="M124 66 l52 0" stroke="${a.accent}" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+    <circle cx="150" cy="70" r="6" fill="${a.accent}" opacity="0.9"/>`:t===9?s+`<path d="M150 78 q10 -26 34 -30 q-4 18 -16 30 q22 6 26 34 q-22 -18 -44 -6 z" fill="url(#${e}hair)"/>`:o}function ia(t,a){let e="";for(let n=0;n<5;n++){let o=250+n*26;e+=`<ellipse cx="${86-n*2}" cy="${o}" rx="13" ry="11" fill="url(#${a}hair)" stroke="${t.hair2}" stroke-width="1.4"/>`}return e+`<path d="M78 372 q-2 14 4 22" stroke="${t.hair2}" stroke-width="5" fill="none" stroke-linecap="round"/>`}function ra(t,a,e,n){if(n==="m")return`<path d="M86 150 C 82 94, 100 68, 150 68 C 200 68, 218 94, 214 150 C 206 124, 190 112, 176 116 C 168 100, 132 100, 124 116 C 110 112, 94 124, 86 150 Z" fill="url(#${e}hair)"/>
+      <path d="M120 112 q30 -10 60 0 q-6 10 -30 10 q-24 0 -30 -10 z" fill="#fff" opacity="0.06"/>
+      <path d="M88 132 q-4 34 0 56 l9 -6 q-5 -26 -1 -48 z" fill="url(#${e}hair)"/>
+      <path d="M212 132 q4 34 0 56 l-9 -6 q5 -26 1 -48 z" fill="url(#${e}hair)"/>`;let o=`<path d="M86 152 C 82 96, 100 70, 150 70 C 200 70, 218 96, 214 152 C 206 128, 190 118, 178 120 C 168 106, 132 106, 122 120 C 110 118, 94 128, 86 152 Z" fill="url(#${e}hair)"/>`,s=`<path d="M90 128 C 76 178, 80 240, 104 300 C 106 258, 100 200, 106 148 Z" fill="url(#${e}hair)"/>
+    <path d="M92 200 C 90 238, 96 272, 104 292" stroke="#000" stroke-width="2" opacity="0.10" fill="none"/>
+    <path d="M96 170 C 92 210, 94 250, 102 284" stroke="#fff" stroke-width="1.2" opacity="0.10" fill="none"/>`,i=`<path d="M210 128 C 224 178, 220 240, 196 300 C 194 258, 200 200, 194 148 Z" fill="url(#${e}hair)"/>
+    <path d="M208 200 C 210 238, 204 272, 196 292" stroke="#000" stroke-width="2" opacity="0.10" fill="none"/>
+    <path d="M204 170 C 208 210, 206 250, 198 284" stroke="#fff" stroke-width="1.2" opacity="0.10" fill="none"/>`,r={0:`<path d="M92 140 q8 -34 58 -34 q50 0 58 34 q-20 -18 -58 -18 q-38 0 -58 18 z" fill="url(#${e}hair)"/>`,1:`<path d="M94 138 q6 -32 56 -32 q50 0 56 32 q-18 -14 -56 -14 q-38 0 -56 14 z" fill="url(#${e}hair)"/>
+        <path d="M100 132 q12 26 2 48" stroke="url(#${e}hair)" stroke-width="9" fill="none" stroke-linecap="round"/>`,2:`<path d="M96 140 q10 -34 54 -34 q44 0 54 34 q-16 -12 -54 -12 q-38 0 -54 12 z" fill="url(#${e}hair)"/>`,3:`<path d="M90 146 q4 -38 60 -38 q56 0 60 38 q-22 -22 -60 -22 q-38 0 -60 22 z" fill="url(#${e}hair)"/>
+        <path d="M90 146 q6 22 18 36 q-6 -28 -2 -40 z" fill="url(#${e}hair)"/>`,4:`<path d="M88 142 q6 -40 62 -40 q56 0 62 40 q-24 -20 -62 -20 q-38 0 -62 20 z" fill="url(#${e}hair)"/>
+        <path d="M212 140 q12 44 -4 82" stroke="url(#${e}hair)" stroke-width="15" fill="none" stroke-linecap="round"/>`,5:`<path d="M88 144 q2 -42 62 -42 q60 0 62 42 q-26 -24 -62 -24 q-36 0 -62 24 z" fill="url(#${e}hair)"/>
+        <circle cx="108" cy="134" r="18" fill="url(#${e}hair)"/><circle cx="192" cy="134" r="18" fill="url(#${e}hair)"/>`,6:`<path d="M94 142 q8 -36 56 -36 q48 0 56 36 q-20 -16 -56 -16 q-36 0 -56 16 z" fill="url(#${e}hair)"/>
+        <path d="M100 140 q36 8 48 28 q-26 -4 -48 -28 z" fill="url(#${e}hair)"/>`,7:`<path d="M92 142 q12 -34 58 -34 q46 0 58 34 q-28 -8 -58 -8 q-30 0 -58 8 z" fill="url(#${e}hair)"/>
+        <path d="M150 108 q-36 4 -58 34 q30 -12 58 -12 z" fill="#000" opacity="0.07"/>`}[t]||"";if(!r&&t===8)return o+s+i+`<path d="M92 140 q8 -34 58 -34 q50 0 58 34 q-20 -18 -58 -18 q-38 0 -58 18 z" fill="url(#${e}hair)"/>`;if(!r&&t===9)return o+s+i+`<path d="M94 138 q6 -32 56 -32 q50 0 56 32 q-18 -14 -56 -14 q-38 0 -56 14 z" fill="url(#${e}hair)"/>`;let l=`<path d="M106 122 q44 -18 88 -2" stroke="${a.hair2}" stroke-width="2.6" opacity="0.38" fill="none" stroke-linecap="round"/>
+    <path d="M120 112 q30 -10 60 -2" stroke="#ffffff" stroke-width="1.6" opacity="0.12" fill="none" stroke-linecap="round"/>`;return o+s+i+r+l}function la(t,a,e){return t===0?`<circle cx="97" cy="170" r="3.2" fill="${a.accent}"/><circle cx="203" cy="170" r="3.2" fill="${a.accent}"/>`:t===1?`<path d="M188 96 l16 -14 l6 10 l-14 10 z" fill="${a.accent}" opacity="0.9"/>`:t===2?`<g stroke="#2a2430" stroke-width="2.4" fill="none" opacity="0.85">
+    <circle cx="126" cy="150" r="19"/><circle cx="174" cy="150" r="19"/><path d="M145 150 h10"/></g>`:""}var kt,Ve,R,yt=F(()=>{kt=[{bg1:"#2b2440",bg2:"#120f1c",skin:"#f6d9c9",skin2:"#e9bda8",hair:"#2f2a3d",hair2:"#4a4260",cloth:"#5b6ee1",cloth2:"#3d4aa8",eye:"#6d5bd0",accent:"#ffcf6b"},{bg1:"#1e2f3a",bg2:"#0c1418",skin:"#f3d3bd",skin2:"#dfae94",hair:"#d9a86c",hair2:"#b9864b",cloth:"#e8e2d4",cloth2:"#c0b7a4",eye:"#3f8f7a",accent:"#8fd3c7"},{bg1:"#3a1f2b",bg2:"#160b10",skin:"#f8ddcd",skin2:"#e5b8a1",hair:"#7d2f3f",hair2:"#57212d",cloth:"#2b2f3d",cloth2:"#1b1e28",eye:"#c25b76",accent:"#f0a6b8"},{bg1:"#1f3326",bg2:"#0b130e",skin:"#f2d2b8",skin2:"#dcae8d",hair:"#3c2f27",hair2:"#574334",cloth:"#7a8f5a",cloth2:"#55663d",eye:"#8a6a3a",accent:"#d8e0a0"},{bg1:"#2a2f45",bg2:"#0e1018",skin:"#eccbb6",skin2:"#d3a58c",hair:"#c9d3e0",hair2:"#9aa7ba",cloth:"#394d6b",cloth2:"#26374f",eye:"#5f86b8",accent:"#a9c8ef"},{bg1:"#3d2a1c",bg2:"#170f09",skin:"#f7d8c2",skin2:"#e4b393",hair:"#1f1b1a",hair2:"#3a3230",cloth:"#b25a3c",cloth2:"#7f3c27",eye:"#c07a3a",accent:"#f2b26d"},{bg1:"#242040",bg2:"#0d0b1a",skin:"#f4d6c6",skin2:"#dfb29c",hair:"#5a4a8f",hair2:"#3d3266",cloth:"#d9d2ea",cloth2:"#b3a9ca",eye:"#8b6fd6",accent:"#d9c6ff"},{bg1:"#20303c",bg2:"#0a1116",skin:"#e8c3a6",skin2:"#c99b7c",hair:"#232b33",hair2:"#3b4752",cloth:"#4d5a66",cloth2:"#333d47",eye:"#4f8fa8",accent:"#9fd7e8"},{bg1:"#33261f",bg2:"#14100c",skin:"#f7ddc9",skin2:"#e3b79b",hair:"#1c1714",hair2:"#332a24",cloth:"#b8452f",cloth2:"#7f2c1e",eye:"#b8873a",accent:"#e8c07a"},{bg1:"#1f2a33",bg2:"#0b1114",skin:"#f2d4bd",skin2:"#dcae92",hair:"#4a3a55",hair2:"#6b5578",cloth:"#c9cfd9",cloth2:"#9aa3b1",eye:"#8f6bb0",accent:"#d8c8ef"},{bg1:"#2c2438",bg2:"#100c18",skin:"#f6d8c8",skin2:"#e0b39c",hair:"#d9d0e8",hair2:"#b3a6c9",cloth:"#3f5d6b",cloth2:"#2a3f49",eye:"#c04f6a",accent:"#f3b6c6"}],Ve={normal:null,white:"#e7edf7",red:"#b8333f",gold:"#d5a63c",green:"#3f8f6a",violet:"#7b5bb5"};R=[{id:"p1",name:"林晚晴",gender:"f",hair:0,outfit:2,palette:0,accessory:0,seed:1001},{id:"p2",name:"顾清和",gender:"m",hair:3,outfit:1,palette:1,accessory:-1,seed:1002},{id:"p3",name:"苏弥",gender:"f",hair:1,outfit:3,palette:2,accessory:1,seed:1003},{id:"p4",name:"沈砚",gender:"m",hair:4,outfit:4,palette:3,accessory:-1,seed:1004},{id:"p5",name:"白露",gender:"f",hair:2,outfit:5,palette:4,accessory:-1,seed:1005},{id:"p6",name:"陆沉舟",gender:"m",hair:7,outfit:0,palette:5,accessory:-1,seed:1006},{id:"p7",name:"温以宁",gender:"f",hair:5,outfit:1,palette:6,accessory:2,seed:1007},{id:"p8",name:"江野",gender:"m",hair:5,outfit:2,palette:7,accessory:-1,seed:1008},{id:"p9",name:"迟夏",gender:"f",hair:6,outfit:4,palette:1,accessory:0,seed:1009},{id:"p10",name:"闻人照",gender:"m",hair:0,outfit:5,palette:6,accessory:-1,seed:1010},{id:"p11",name:"黎见微",gender:"f",hair:7,outfit:0,palette:3,accessory:1,seed:1011},{id:"p12",name:"许停云",gender:"m",hair:2,outfit:3,palette:4,accessory:-1,seed:1012},{id:"p13",name:"苏挽月",gender:"f",hair:8,outfit:6,palette:5,accessory:1,seed:1013,eyeStyle:"violet"},{id:"p14",name:"沈知微",gender:"f",hair:0,outfit:6,palette:9,accessory:0,seed:1014,eyeStyle:"green"},{id:"p15",name:"洛清商",gender:"m",hair:7,outfit:6,palette:10,accessory:-1,seed:1015},{id:"p16",name:"白芷",gender:"f",hair:9,outfit:0,palette:11,accessory:2,seed:1016,eyeStyle:"white"},{id:"p17",name:"凛",gender:"f",hair:9,outfit:2,palette:8,accessory:-1,seed:1017,eyeStyle:"white"},{id:"p18",name:"樱",gender:"f",hair:3,outfit:1,palette:11,accessory:-1,seed:1018,eyeStyle:"green"},{id:"p19",name:"金穗",gender:"f",hair:1,outfit:3,palette:1,accessory:0,seed:1019,eyeStyle:"gold"},{id:"p20",name:"赤瞳·绫",gender:"f",hair:5,outfit:4,palette:2,accessory:-1,seed:1020,eyeStyle:"red"}]});function q(){try{return{...de,...JSON.parse(localStorage.getItem(Tt)||"{}")}}catch{return{...de}}}function nt(t){let a={...q(),...t};return localStorage.setItem(Tt,JSON.stringify(a)),a}function G(t={}){let a=Date.now();return{id:j("c_"),name:"未命名角色",gender:"f",avatar:"",seed:Math.floor(Math.random()*99999),desc:"",personality:"",scenario:"",greeting:"",system:"",mesExample:"",creatorNotes:"",postHistory:"",tags:[],worldId:"",source:"manual",card:null,portraits:t.avatar?[{id:"p0",label:"默认",url:t.avatar}]:[],activePortrait:0,look:null,anatomy:null,theme:{html:"",css:""},regex:[],lorebook:[],createdAt:a,updatedAt:a,...t}}function st(t){return(!Array.isArray(t.portraits)||!t.portraits.length)&&(t.portraits=t.avatar?[{id:"p0",label:"默认",url:t.avatar}]:[],t.activePortrait=0),(typeof t.activePortrait!="number"||!t.portraits[t.activePortrait])&&(t.activePortrait=0),t.portraits[t.activePortrait]&&(t.avatar=t.portraits[t.activePortrait].url),t.activeState=t.portraits[t.activePortrait]&&t.portraits[t.activePortrait].state||"初始",t.anatomy||(t.anatomy=An(t.seed||1)),t}function ca(t){return{id:t.id,name:t.name,avatar:t.avatar||"",gender:t.gender,desc:t.desc||"",personality:t.personality||"",scenario:t.scenario||"",greeting:t.greeting||"",system:t.system||"",mesExample:t.mesExample||"",postHistory:t.postHistory||"",promptIds:t.promptIds||[],loreIds:t.loreIds||[],dead:t.dead||!1,theme:t.theme||{html:"",css:""},regex:t.regex||[],lorebook:t.lorebook||[]}}function Lt(t={}){let a=Date.now();return{id:j("w_"),name:"未命名世界",desc:"",prompt:"",cover:"",tags:[],createdAt:a,updatedAt:a,...t}}function O({mode:t="catbox",title:a="",cast:e=[],world:n=null,lore:o=[]}={}){let s=Date.now(),i=e.length>1?e.map(r=>r.name).slice(0,3).join("、")+(e.length>3?` 等 ${e.length} 人`:""):e[0]?e[0].name:"新对话";return{id:j("ch_"),mode:t,title:a||i,cast:e.map(ca),worldId:n?n.id:"",worldName:n?n.name:"",worldPrompt:n&&n.prompt||"",lore:o||[],promptIds:n&&n.promptIds||[],loreIds:n&&n.loreIds||[],choices:!1,createdAt:s,updatedAt:s}}async function L(t){return(await ie("messages","chatId",t)).sort((e,n)=>e.ts-n.ts)}async function ht(t,a,e){let n={id:j("m_"),chatId:t,role:a,content:e,ts:Date.now()};await b("messages",n);let o=await A("chats",t);return o&&(o.updatedAt=n.ts,o.preview=e.slice(0,80),await b("chats",o)),n}function da(t){let m=t.mode,a={catbox:"这是「猫箱」：你和角色在用手机聊天。大部分时间只是说话，动作和神态用（）夹在句子中间，像发微信。",tavern:"这是「酒馆」式叙事：以剧情描写为主（约七成），描写不用括号；角色的台词用「」包住。",scene:"这是大世界：你在写一部小说。以第三人称叙事为主，写环境、动作、气氛，台词用「」。一次推进一小段剧情。",group:"这是多人群聊：以对话为主，每句前加「角色名：」，动作神态用（）包住。"}[m],e=[a?a+`\n`:"","用简体中文回复，第二人称「你」称呼玩家。","保持角色口吻与设定，不要跳出角色，不要总结剧情，不要替玩家做决定或替玩家说话。"];
+var rl=(typeof q==="function"&&(q().replyLen||"mid"))||"mid";
+var lenTxt={short:"字数：回复要短，猫箱 40～100 字、大世界 120～200 字。",mid:"",long:"字数：写足，猫箱 200～350 字、大世界 400～700 字，细节和心里活动都要写。"}[rl]||"";
+if(m==="catbox"){e.push("像真人发消息，不要长篇大论，不要写大段环境和背景。");e.push("一次只说 1～3 句话，留出接话的空间；表情、小动作可以写，但不要写成小说。")}
+else if(m==="scene"){e.push("先写环境和动作，再让角色开口，像小说推进。");e.push("每次让局势发生一点变化：有人进门、有人说了不该说的话、天色变了。不要原地重复。");e.push("不要替玩家做决定；多人时每句台词前加「角色名：」。")}
+else{e.push("动作、神态、环境描写具体，推进剧情而不是原地重复。")}
+lenTxt&&e.push(lenTxt);
+return t.choices&&e.push(`回复的最后另起一段，用这个格式给出 3 个可选行动（每条不超过 20 字）：
+[选项]
+1. …
+2. …
+3. …`),e.join(`\n`)}function pe(t){let a=[`【角色：${t.name}】`];t.dead&&a.push(`状态：已经死了，是一具尸体，不能说话不能动。`);return t.desc&&a.push(`设定：${t.desc}`),t.personality&&a.push(`性格：${t.personality}`),t.scenario&&a.push(`当前场景：${t.scenario}`),t.system&&a.push(`扮演要求：${t.system}`),t.mesExample&&a.push(`对话示例（只学语气，不要照抄）：${t.mesExample.slice(0,1200)}`),t.postHistory&&a.push(`额外要求：${t.postHistory.slice(0,600)}`),a.join(`
+`)}function ue(t,a=""){let e=q(),n=[];if(e.system)n.push(e.system);let ps=zPick(zCache.prompts,t.promptIds||[]);if(ps.length){let pb=ps.slice(0,4).map(function(p){return String(p.body||"").slice(0,500)}).filter(Boolean);pb.length&&n.push(pb.join("\n\n"))}let up=t.userPersona||e.userPersona;up&&n.push(`【玩家设定】\n`+String(up).slice(0,400));t.worldPrompt&&n.push(`【世界设定：${t.worldName||""}】
+${t.worldPrompt}`);if(t.cast.length>1){let s=t.mode==="group"?"这是一个多人群聊，角色之间会互相搭话、插嘴、吐槽，也可以两三个人同时回应。":"你在同一场戏里扮演下面这些角色，轮流或同时出场。";n.push(s+`
+`+t.cast.map(pe).join(`
+
+`)),n.push(`对话格式：每句台词前加「角色名：」，可以写动作和环境；不要写「${e.userName}：」开头的台词。每次回复让至少两个角色开口。`)}else t.cast[0]&&(n.push(pe(t.cast[0])),t.cast[0].greeting&&n.push(`参考开场白（不要照抄）：${t.cast[0].greeting}`));let dead=t.cast.filter(function(c){return c.dead}).map(function(c){return c.name});dead.length&&n.push(`【已经死亡的角色：`+dead.join(`、`)+`】\n她们已经死了，只剩一具尸体。不能说话、不能有动作、不能回应、不能害羞，也不能被当成活人互动。只能作为尸体被提及、搬运或处理。`);let allow=t.loreIds||[],o=[];for(let s of t.lore||[]){if(!s.content)continue;if(allow.length&&allow.indexOf(s.id)<0)continue;let i=(s.keys||[]).filter(Boolean);(!i.length||i.some(l=>a&&a.includes(l)))&&o.push(s.content)}for(let s of t.cast)for(let i of s.lorebook||[]){if(!i.content||i.enabled===!1)continue;let r=(i.keys||[]).filter(Boolean);(!r.length||r.some(p=>a&&a.includes(p)))&&o.push(i.content)}return t.memory&&n.push(`【前情提要】
+`+t.memory),o.length&&n.push(`【背景资料】
+`+o.join(`
+`).slice(0,2e3)),n.push(da(t)),n.join(`
+
+`)}function fe(t){let a=q(),e=Math.max(2,Math.min(80,Number(a.maxHistory)||30));return t.filter(n=>n.role==="user"||n.role==="assistant").slice(-e).map(n=>({role:n.role,content:n.content}))}async function me(){return{app:"corverse",version:1,exportedAt:new Date().toISOString(),settings:q(),chars:await x("chars"),worlds:await x("worlds"),chats:await x("chats"),messages:await x("messages"),libs:await x("libs")}}async function ye(t){if(!t||t.app!=="corverse")throw new Error("不是本应用的备份文件");t.settings&&nt(t.settings);for(let a of["chars","worlds","chats","messages","libs"])for(let e of t[a]||[])await b(a,e);return!0}async function he(){await re(),localStorage.removeItem(Tt)}async function ot(){await zLoadLibs();return zCache.lores.map(function(l){return{id:l.id,keys:l.keys,content:l.body}})}async function ge(){if(!(await x("libs")).length)for(let e of ua)await b("libs",{id:j("l_"),builtin:!0,createdAt:Date.now(),...e});let a=await x("libs");for(let e of pa){let h=a.find(n=>n.type==="gen"&&n.mode===e.mode&&n.builtin);if(!h)await b("libs",{id:j("l_"),type:"gen",mode:e.mode,builtin:!0,createdAt:Date.now(),...e});else if(h.body!==e.body){h.body=e.body;h.updatedAt=Date.now();await b("libs",h)}}}async function U(t){return(await x("libs")).filter(e=>e.type==="gen"&&(!e.mode||e.mode===t)).map(e=>e.body).filter(Boolean).join(`
+`)}async function be(){if(!q().builtinV2)try{let t=await x("worlds"),a=await x("chars"),e=t.find(n=>n.builtin==="naruto");if(e||(e=Lt({name:"木叶 · 成年期",desc:"忍界大战结束几年后的木叶村，日子重新有了烟火气。",prompt:["时代：忍界大战结束数年后，木叶隐村重建完毕，街道热闹，任务照旧。","地点：木叶村、火影楼、医院、训练场、一乐拉面、村外森林。","规则：忍术、查克拉、忍具、通灵兽都真实存在；影级强者很少亲自出手，日常靠中忍和暗部维持。","基调：日常与任务交错，有温情也有危险；不写露骨内容，重点放在人物关系与选择。","称呼：村民称火影为「纲手大人」，医疗忍者多在医院值班。"].join(`
+`),builtin:"naruto"}),await b("worlds",e)),!a.some(n=>n.source==="builtin")){let n=[{name:"日向雏田",seed:1017,eyeStyle:"white",hair:7,palette:11,outfit:2,desc:"日向宗家的长女，成年后成了可靠的忍者，说话仍然轻声细语。白眼能看穿查克拉流向。",personality:"温柔、克制，容易害羞，但认定的事会坚持到底。说话常停顿，习惯用敬语。",scenario:"傍晚的训练场，她刚结束一组柔拳练习。",greeting:"（她把护额扶正，看到你时脚步慢了半拍）「啊……你来了。要一起练一会儿吗？」"},{name:"纲手",seed:1019,eyeStyle:"gold",hair:1,palette:1,outfit:4,desc:"第五代火影，忍界最强的医疗忍者。嗜酒好赌，脾气上来谁都拦不住，但对村子里的人极护短。",personality:"豪爽、嘴硬心软，爱用反问句；谈正事时干脆利落，私下会拿你打趣。",scenario:"火影楼加班到深夜，桌上堆着文件和一壶酒。",greeting:"（她头也不抬地翻着文件，把酒壶往你那边推了推）「这么晚还不睡？坐。正好缺个人陪我骂两句。」"},{name:"春野樱",seed:1018,eyeStyle:"green",hair:3,palette:11,outfit:1,desc:"医疗班的骨干，怪力惊人。成年后沉稳了许多，仍然会因为同伴受伤而炸毛。",personality:"爽快、认真，嘴上不饶人，行动上总先替别人想。生气时会压低声音。",scenario:"医院的走廊，她刚处理完一批伤员。",greeting:"（她合上病历本，甩了甩发酸的手腕）「你来得正好——别站着，帮我把这箱药搬进去。」"}];for(let o of n){let s=R.find(l=>l.seed===o.seed)||R[0],look={hair:o.hair,outfit:o.outfit,palette:o.palette,accessory:s.accessory,eyeStyle:o.eyeStyle},an=An(o.seed),ps=["初始","内衣","全裸"].map(st2=>({id:"p"+o.seed+zEx(st2),label:st2,url:S({seed:o.seed,gender:"f",...look,exposure:zEx(st2),anatomy:an}),state:st2})),r=G({name:o.name,gender:"f",avatar:ps[0].url,seed:o.seed,look,anatomy:an,portraits:ps,activePortrait:0,source:"builtin",desc:o.desc,personality:o.personality,scenario:o.scenario,greeting:o.greeting,worldId:e.id,tags:["火影","内置"]});await b("chars",r)}}nt({builtinV2:!0})}catch(t){console.warn("内置内容写入失败",t)}}var Tt,de,pa,ua,N=F(()=>{P();C();yt();Tt="cv.settings.v1",de={apiKey:"",baseUrl:"https://api.deepseek.com",model:"deepseek-chat",temperature:1,maxTokens:1600,stream:!0,proxy:"",system:"",maxHistory:60,userName:"你",userPersona:"",worldIntro:"",seeded:!1,theme:"auto"};pa=[{mode:"char",name:"角色生成规范",body:"生成角色时：名字好记；设定具体到职业、习惯、怕什么；性格要有反差和缺点；开场白必须是第一句台词，带一个动作，让玩家知道现在是什么场景。"},{mode:"world",name:"世界生成规范",body:"生成世界时：先定时代与地点，再写三条规则、两股势力、一个日常冲突；语言具体，不写空话；结尾留一个可以立刻开场的场景。"},{mode:"tavern",name:"酒馆卡生成规范",body:"生成酒馆卡时，除了角色设定，还要给出可用的美化 HTML（含内联 CSS，不超过 60 行）、一条正则替换规则、两条世界书条目；美化只用 div/style，不引用外部资源。"},{mode:"life",name:"人生模拟生成规范",body:"人生模拟：每年一件具体的小事，不要宏大叙事；三个选项分别偏稳、偏险、偏意外；数值变化克制，单年不超过 15。"},{mode:"portrait",name:"立绘参数生成规范",body:"把角色描述翻译成一份立绘参数。只输出 JSON，不要解释，不要代码块。\n\n{\"outfit\":0-6,\"state\":\"初始|内衣|全裸\",\"expr\":0-5,\"bg\":0-5,\"mark\":-1|0|1|2,\"hairAcc\":-1|0|1|2,\"anatomy\":{\"bust\":0-1,\"areola\":0-1,\"vulva\":0-1,\"pubes\":0-1,\"depth\":0-1},\"dress\":\"这套衣服的一句话描述\",\"reason\":\"为什么这么配\"}\n\n每个值都按角色的身份、性格和当前场景挑，不要套模板：\n- outfit：0 简约 / 1 衬衫 / 2 高领 / 3 宽松 / 4 露肩 / 5 和风 / 6 制服\n- expr：0 平静 / 1 微笑 / 2 冷淡 / 3 害羞 / 4 不悦 / 5 媚\n- bg：0 侧光 / 1 底光 / 2 圆光 / 3 星点 / 4 顶光 / 5 同心底纹\n- mark：-1 无 / 0 眼下泪痣 / 1 乳晕旁痣 / 2 腹部纹身\n- hairAcc：-1 无 / 0 发带 / 1 发夹 / 2 花饰\n- dress：12 字以内，写清材质和颜色，例如「墨绿丝质吊带裙」\n- reason：20 字以内，说清为什么这套配这个人\n\nanatomy 全部 0~1，按角色身材设定填，同一个人每次都保持一致：\n- bust 胸围，0 平、1 丰满\n- areola 乳晕大小\n- vulva 阴部外露面积\n- pubes 阴毛密度，低于 0.32 不画\n- depth 剖面里子宫和阴道的深度\n\n画法由代码负责，你只给参数：\n- state=全裸：自动画左右乳房（乳晕、乳头）、阴部（大阴唇、阴蒂、缝隙）、肛门\n- state=内衣：自动画文胸和内裤\n- state=初始：自动画衣服，bust 大于 0.5 时衣服上有轮廓和乳沟阴影\n- 横截面图自动跟进 anatomy，每个角色都不一样\n\n硬性要求：hair、palette、eyeStyle 必须沿用角色现有值，一个字都不许改，否则就不是同一个人了。只允许改 outfit、state、expr、bg、mark、hairAcc、anatomy。"}],ua=[{type:"prompt",name:"沉浸叙事",body:"你是互动小说的叙事者。描写具体、克制、有画面感，重视环境、气味、温度与人物的小动作。每次回复都要让局势发生一点变化，最后把选择权留给玩家。"},{type:"prompt",name:"轻快日常",body:"基调轻松幽默，像朋友之间的闲聊。角色可以有小心思和吐槽，但不狗血、不煽情。回复短一些，多留白，让玩家接话。"},{type:"prompt",name:"选项式推进",body:"每次回复结尾给出 3 个风格不同的行动选项，分别偏向：谨慎、冒险、出人意料。选项要具体到动作，不要空泛。"},{type:"world",name:"现代都市",body:"当代城市，手机、地铁、便利店、写字楼。没有超能力，冲突来自人际、工作与生活选择。语言口语化。"},{type:"world",name:"蒸汽朋克港城",body:"齿轮与蒸汽驱动的港城，飞艇停在高塔之间。阶层分明，机械师与走私客在阴影里交易。科技粗糙、危险，但充满机会。"},{type:"world",name:"山中仙门",body:"云雾缭绕的修真山门，师徒、戒律、丹药与剑。修为分九境，资源稀缺。人情比法术更重要。"}]});function Pt(t){let a="";for(let e=0;e<t.length;e+=32768)a+=String.fromCharCode.apply(null,t.subarray(e,e+32768));return a}function va(t){try{return new TextDecoder("utf-8",{fatal:!0}).decode(t)}catch{return null}}function wa(t){try{return new TextDecoder("utf-8").decode(t)}catch{return""}}function qe(t){if(!t||t.length<8)return!1;for(let a=0;a<8;a+=1)if(t[a]!==ga[a])return!1;return!0}async function zt(t){if(t&&typeof t.arrayBuffer=="function")return new Uint8Array(await t.arrayBuffer());throw new Error("文件对象不支持 arrayBuffer()")}async function xa(t){return t&&typeof t.text=="function"?await t.text():new TextDecoder("utf-8").decode(await zt(t))}async function we(t,a){if(typeof DecompressionStream!="function")throw new Error("缺少 DecompressionStream");let e=new Blob([t]).stream().pipeThrough(new DecompressionStream(a));return new Uint8Array(await new Response(e).arrayBuffer())}async function xe(t){try{return await we(t,"deflate")}catch{return await we(t,"deflate-raw")}}function Me(t){if(typeof t!="string")return null;let a=t.replace(/\s+/g,"");if(a.length<8||a.length%4===1)return null;let e=/^[A-Za-z0-9+/]+={0,2}$/.test(a),n=/^[A-Za-z0-9\-_]+={0,2}$/.test(a);return!e&&!n||a.length%4!==0&&!/[_-]/.test(a)&&a.length<16||a.length<16&&!a.includes("=")&&!/[0-9]/.test(a)?null:a}function $a(t){let a=Me(t);if(!a)return null;/[-_]/.test(a)&&(a=a.replace(/-/g,"+").replace(/_/g,"/")),a.length%4&&(a+="=".repeat(4-a.length%4));let e;try{e=atob(a)}catch{return null}let n=new Uint8Array(e.length);for(let o=0;o<e.length;o+=1)n[o]=e.charCodeAt(o);return n}function ka(t){if(!t||t.includes("�"))return!1;let a=0;for(let e=0;e<t.length;e+=1){let n=t.charCodeAt(e);n===9||n===10||n===13||(n<32||n===127)&&(a+=1)}return a/t.length<.02}function Sa(t){let a=Me(t);if(!a)return null;let e=$a(a);if(!e||e.length<2)return null;let n=va(e);return!n||!ka(n)?null:/[\u3400-\u9fff]/.test(n)||/[<>{}\n\r\t]/.test(n)||/\s/.test(n)||a.includes("=")&&n.length>=2?n:null}function qa(t){if(/%[0-9A-Fa-f]{2}/.test(t))try{let a=decodeURIComponent(t);if(a!==t)return a}catch{}if(/\\u[0-9A-Fa-f]{4}/.test(t)){let a=t.replace(/\\u([0-9A-Fa-f]{4})/g,(e,n)=>String.fromCharCode(parseInt(n,16)));if(a!==t)return a}return Sa(t)}function Mt(t){let a=$(t);if(!a)return"";let e=a.trim();if(!e)return a;let n=/^data:[^,]*;base64,/i.exec(e);n&&(e=e.slice(n[0].length));let o=!1;for(let s=0;s<3;s+=1){let i=qa(e);if(i==null||i===e)break;e=i,o=!0}return o?e:a}function _t(t,a){let e=a;for(;e<t.length&&t[e]!==0;)e+=1;return e>=t.length?null:{bytes:t.subarray(a,e),next:e+1}}async function Ma(t,a){let e=_t(a,0);if(!e)return null;let n=Pt(e.bytes);if(!n)return null;if(t==="tEXt")return{keyword:n,text:Pt(a.subarray(e.next))};if(t==="zTXt")return e.next>=a.length||a[e.next]!==0?null:{keyword:n,text:Pt(await xe(a.subarray(e.next+1)))};let o=e.next;if(o+2>a.length)return null;let s=a[o],i=a[o+1];o+=2;let r=_t(a,o);if(!r)return null;let l=_t(a,r.next);if(!l)return null;let p=a.subarray(l.next);if(s===1){if(i!==0)return null;p=await xe(p)}return{keyword:n,text:wa(p)}}async function Ea(t){let a=[],e;if(t instanceof Uint8Array)e=t;else if(t instanceof ArrayBuffer)e=new Uint8Array(t);else if(t&&t.buffer instanceof ArrayBuffer)e=new Uint8Array(t.buffer,t.byteOffset||0,t.byteLength);else return a;if(!qe(e))return a;let n=new DataView(e.buffer,e.byteOffset,e.byteLength),o=8;for(;o+8<=e.length;){let s=n.getUint32(o),i=String.fromCharCode(e[o+4],e[o+5],e[o+6],e[o+7]),r=o+8,l=r+s;if(s>e.length||l+4>e.length)break;if(i==="tEXt"||i==="zTXt"||i==="iTXt")try{let p=await Ma(i,e.subarray(r,l));p&&p.keyword&&a.push(p)}catch{}if(i==="IEND")break;o=l+4}return a}function Aa(t){return typeof t!="string"||t.length<8?!1:/<\s*(?:div|span|style|script|link|meta|p|br|img|a|h[1-6]|table|tr|td|section|article|details|summary|iframe|svg|canvas|button|label|input)\b/i.test(t)||/<\/\s*(?:div|span|style|script|p|h[1-6]|table|section|details)\s*>/i.test(t)}function Ba(t){if(typeof t!="string")return!1;let a=t.trim();return a.length<10||a.length>5e5||/^[\[{]/.test(a)||/<\s*[a-z!/]/i.test(a)?!1:/\{[^{}]*:[^{}]*\}/.test(a)}function Dt(t,a,e,n){if(!(t==null||n>10||a.length>=800)){if(typeof t=="string"){t.length>=8&&t.length<=ba&&a.push(t);return}if(!(typeof t!="object"||e.has(t))){if(e.add(t),Array.isArray(t)){t.forEach(o=>Dt(o,a,e,n+1));return}for(let o of Object.keys(t))o!=="raw"&&Dt(t[o],a,e,n+1)}}}function Ca(t,a){let e=[],n=[],o=new Set,s=new Set,i=0,r=(m,u,g)=>{let v=$(g).trim();if(!v||u.has(v)||i>=qt)return;let E=v.length>qt-i?v.slice(0,qt-i):v;u.add(E),m.push(E),i+=E.length},l=[t,a,t&&t.data,a&&a.data];for(let m of l){if(!m||typeof m!="object")continue;let u=m.theme;!u||typeof u!="object"||(r(e,o,Mt($(u.html))),r(n,s,Mt($(u.css))))}let p=[];for(let m of l)if(!(!m||typeof m!="object"))for(let u of["extensions","tavern_helper","character_book","regex_scripts","beautify","美化","theme"]){let g=m[u];g&&typeof g=="object"&&p.push(g)}let y=[],h=new Set;for(let m of p)Dt(m,y,h,0);for(let m of y){if(/^data:(image|audio|video)\//i.test(m))continue;let u=Mt(m);if(!(!u||u.length<8)){if(Aa(u)){let g=/<style[^>]*>([\s\S]*?)<\/style>/gi,v;for(;v=g.exec(u);)r(n,s,v[1]);r(e,o,u)}else Ba(u)&&r(n,s,u);if(i>=qt)break}}return{html:e.join(`
+`),css:n.join(`
+`)}}function $e(t){if(!t||typeof t!="object")return null;let a=t.extensions;return a&&typeof a=="object"&&!Array.isArray(a)?a:null}function Ia(t){return Array.isArray(t)?t.map(a=>$(a).trim()).filter(Boolean):typeof t=="string"?t.split(/[,，、]/).map(a=>a.trim()).filter(Boolean):[]}function ja(...t){let a=[],e=new Set;for(let n of t)for(let o of Se(n)){if(!o||typeof o!="object"||o.disabled)continue;let s=$(o.findRegex??o.find_regex??o.find??o.regex??o.pattern??""),i=$(o.flags??o.flag??""),r=/^\/([\s\S]*)\/([a-z]*)$/.exec(s);if(r&&(s=r[1],i||(i=r[2])),s=s.trim(),!s)continue;let l=s+"\0"+i;e.has(l)||(e.add(l),a.push({findRegex:s,replaceString:$(o.replaceString??o.replace_string??o.replace??""),flags:i,placement:Number(o.placement==null?1:o.placement),promptOnly:!!o.promptOnly}))}return a}function Ta(t,a){let e=a&&(a.character_book||a.lorebook||a.world_info)||t&&(t.character_book||t.lorebook||t.world_info)||null;if(!e||typeof e!="object")return[];let n=Array.isArray(e)?e:e.entries||e;if(!n||typeof n!="object")return[];Array.isArray(n)||(n=Object.values(n));let o=[];for(let s of n){if(!s||typeof s!="object")continue;let i=s.keys??s.key??s.keywords??s.k??"",r=Array.isArray(i)?i:String(i).split(/[,，、]/);r=r.map(l=>$(l).trim()).filter(Boolean),r.length&&o.push({keys:r,content:$(s.content??s.entry??s.value??s.text??""),enabled:!(s.enabled===!1||s.enabled===0||s.disable===!0||s.disabled===!0),comment:$(s.comment??s.name??s.title??"")})}return o}function Ot(t){let a=t&&typeof t=="object"&&!Array.isArray(t)?t:{},e=a.data&&typeof a.data=="object"&&!Array.isArray(a.data)?a.data:a;if(typeof a.data=="string")try{let r=JSON.parse(a.data);r&&typeof r=="object"&&(e=r)}catch{}let n=(...r)=>{for(let l of r)for(let p of[e,a]){let y=p?p[l]:null;if(y!=null&&y!=="")return y}return""},o=$e(e),s=$e(a),i={name:$(n("name","char_name","charName")).trim(),description:$(n("description")),personality:$(n("personality","char_persona","persona")),scenario:$(n("scenario","world_scenario")),firstMes:$(n("first_mes","firstMes","first_message","char_greeting","greeting")),mesExample:$(n("mes_example","mesExample","example_dialogue","exampleMessage")),systemPrompt:$(n("system_prompt","systemPrompt")),postHistory:$(n("post_history_instructions","postHistoryInstructions")),creatorNotes:$(n("creator_notes","creatorNotes","creatorcomment","creator_comment")),tags:Ia(n("tags","keywords")),lorebook:Ta(a,e),regex:ja(e.regex_scripts,a.regex_scripts,o&&o.regex_scripts,s&&s.regex_scripts),theme:{html:"",css:""},raw:t&&typeof t=="object"?t:null};return i.theme=Ca(i,t),i}function ke(t,a,e){let n=$(t).replace(/^\uFEFF/,"").trim();if(!n)return a.push(e+" 内容为空"),null;let o=i=>{try{return JSON.parse(i)}catch{return null}},s=o(n);if(!s){let i=Mt(n);i&&i!==n&&(s=o(i))}return!s||typeof s!="object"?(a.push(e+" 内容不是合法 JSON"),null):Array.isArray(s)&&(a.push(e+" 是数组，已取第一条"),s=s.find(i=>i&&typeof i=="object")||null,!s)?(a.push(e+" 数组里没有卡片对象"),null):s}async function Ee(t){let a=[],e=Ot({});try{if(!t)return a.push("没有收到文件"),{card:e,warnings:a};let n=$(t.name),o=$(t.type).toLowerCase(),s=((/\.([a-z0-9]+)$/i.exec(n)||[])[1]||"").toLowerCase(),i="";o.includes("json")||s==="json"?i="json":(o.includes("png")||s==="png")&&(i="png");let r=null;i||(r=await zt(t),i=qe(r)?"png":"json");let l=null;if(i==="png"){r||(r=await zt(t));let p=await Ea(r),y=[];for(let h of["ccv3","chara","chara_card_v2","ccv2"]){let m=p.find(u=>u.keyword.toLowerCase()===h);m&&y.push(m)}for(let h of p)/chara|ccv/i.test(h.keyword)&&!y.includes(h)&&y.push(h);if(!y.length)a.push(p.length?"PNG 里没找到 chara 字段":"PNG 里没有可读的文本块");else{let h=[];for(let m of y){let u=[],g=ke(m.text,u,"PNG");if(g){l=g;break}h.push(...u)}l||a.push(...h)}}else l=ke(await xa(t),a,"JSON");l&&(e=Ot(l)),e.name||a.push(i==="json"?"JSON 缺少 name 字段":"卡片缺少 name 字段")}catch(n){a.push("解析失败："+(n&&n.message?n.message:String(n))),e=Ot({})}return{card:e,warnings:a}}function Ae(t,a,w){let e=$(t);for(let n of Se(a)){if(!n||typeof n!="object"||n.promptOnly)continue;let pl=n.placement==null?1:Number(n.placement);if(pl===0)continue;if(w==="user"&&pl===2)continue;if(w==="ai"&&pl===1)continue;let o=$(n.findRegex??n.find_regex??n.regex??"");if(!o)continue;let s=o,i=$(n.flags??n.flag??""),r=/^\/([\s\S]+)\/([a-z]*)$/.exec(o);r&&(s=r[1],i||(i=r[2])),i=Array.from(new Set(i.split(""))).filter(l=>"dgimsuvy".includes(l)).join(""),i.includes("g")||(i+="g");try{let l=new RegExp(s,i);l.lastIndex=0,e=e.replace(l,$(n.replaceString??n.replace_string??n.replace??"")),l.lastIndex=0}catch{}}return e}var ga,qt,ba,$,Se,Ht=F(()=>{ga=[137,80,78,71,13,10,26,10],qt=2e6,ba=4e6,$=t=>typeof t=="string"?t:t==null?"":String(t),Se=t=>Array.isArray(t)?t:t==null||t===""?[]:[t]});function Be(t){let a=String(t||"").trim().replace(/\/+$/,"");return a||(a="https://api.deepseek.com"),/\/chat\/completions$/.test(a)?a:a+"/chat/completions"}function La(t){let a=String(t||"").trim().replace(/\/+$/,"")||"https://api.deepseek.com";return/\/chat\/completions$/.test(a)&&(a=a.replace(/\/chat\/completions$/,"")),a+"/models"}function Ce(t){let e=(q().proxy||"").trim();return e?e.includes("{url}")?e.replace("{url}",encodeURIComponent(t)):e.replace(/\/+$/,"")+"/"+t:t}function Gt(t,a){let e="";try{let s=JSON.parse(a);e=s.error&&(s.error.message||s.error)||""}catch{e=a.slice(0,160)}let o={400:"请求格式有问题",401:"API Key 无效或已过期",402:"账户余额不足",403:"没有权限使用这个模型",404:"接口地址不对（检查 API 地址）",422:"参数不被接受",429:"请求太频繁，稍等一下",500:"模型服务出错",502:"网关错误",503:"服务繁忙"}[t]||`请求失败（${t}）`;return e?`${o}：${String(e).slice(0,120)}`:o}function Ie(){return!!String(q().apiKey||"").trim()}async function je(){let t=q(),a=await fetch(Ce(La(t.baseUrl)),{headers:{Authorization:`Bearer ${t.apiKey}`}});if(!a.ok)throw new Error(Gt(a.status,await a.text()));return((await a.json()).data||[]).map(n=>n.id).filter(Boolean).sort()}async function it(t,{onDelta:a,signal:e,temperature:n,maxTokens:o}={}){let s=q();if(!s.apiKey)throw new Error("还没有填 API Key，去「设置」里填一个");let i={model:s.model||"deepseek-chat",messages:t,temperature:n??Number(s.temperature??1),max_tokens:o||Number(s.maxTokens)||2048,stream:!!(s.stream&&a)},r=await fetch(Ce(Be(s.baseUrl)),{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${s.apiKey}`},body:JSON.stringify(i),signal:e}).catch(u=>{throw u.name==="AbortError"?u:new Error("连不上模型服务：检查网络，或者改用 DeepSeek 官方地址（跨域被拦时填 CORS 代理）")});if(!r.ok)throw new Error(Gt(r.status,await r.text()));if(!i.stream){let u=await r.json();return{text:u.choices&&u.choices[0]&&u.choices[0].message&&u.choices[0].message.content||""}}if(!r.body||!r.body.getReader){let u=await r.text();return{text:Na(u,a)}}let l=r.body.getReader(),p=new TextDecoder("utf-8"),y="",h="";for(;;){let{value:u,done:g}=await l.read();if(g)break;y+=p.decode(u,{stream:!0});let v;for(;(v=y.indexOf(`
+`))>=0;){let E=y.slice(0,v).trim();if(y=y.slice(v+1),!E.startsWith("data:"))continue;let z=E.slice(5).trim();if(!z||z==="[DONE]")continue;let W=Rt(z);W&&(h+=W,a&&a(h,W))}}let m=y.trim();if(m.startsWith("data:")){let u=m.slice(5).trim();if(u&&u!=="[DONE]"){let g=Rt(u);g&&(h+=g,a&&a(h,g))}}return{text:h}}function Rt(t){try{let a=JSON.parse(t),e=a.choices&&a.choices[0];return e&&(e.delta&&e.delta.content||e.message&&e.message.content)||""}catch{return""}}function Na(t,a){let e="";for(let n of t.split(`
+`)){let o=n.trim();if(!o.startsWith("data:"))continue;let s=o.slice(5).trim();if(!s||s==="[DONE]")continue;let i=Rt(s);i&&(e+=i,a&&a(e,i))}return e}function J(t){let a=String(t||"").trim().replace(/^```(?:json)?/i,"").replace(/```$/,"").trim(),e=a.indexOf("{"),n=a.lastIndexOf("}");e>=0&&n>e&&(a=a.slice(e,n+1));try{return JSON.parse(a)}catch{}try{return JSON.parse(a.replace(/,\s*([}\]])/g,"$1"))}catch{return{}}}async function Y(t,{system:a="你是中文写作助手，只输出用户要求的格式，不要解释。",temperature:e=.9,maxTokens:n=700}={}){let{text:o}=await it([{role:"system",content:a},{role:"user",content:t}],{temperature:e,maxTokens:n});return o}async function Te(){let t=q(),a=await fetch(Be(t.baseUrl),{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${t.apiKey}`},body:JSON.stringify({model:t.model||"deepseek-chat",messages:[{role:"user",content:"只回复两个字：正常"}],max_tokens:8,stream:!1})});if(!a.ok)throw new Error(Gt(a.status,await a.text()));let e=await a.json();return e.choices&&e.choices[0]&&e.choices[0].message&&e.choices[0].message.content||"（空回复）"}var Q=F(()=>{N()});var gt={};K(gt,{addPortrait:()=>Ne,editChar:()=>rt,mount:()=>Et,portraitPicker:()=>lt,shrinkImage:()=>ct});async function Et(t,a="catbox"){let e=(await x("chars")).sort((r,l)=>(l.updatedAt||0)-(r.updatedAt||0)),n=a==="tavern";t.innerHTML=`
+    <div class="screen">
+      <div class="topbar">
+        <a class="icon-btn" href="#/home">‹</a>
+        <h1>${n?"酒馆 · 角色卡":"猫箱 · 角色"}</h1>
+        ${n?'<button class="btn sm" data-import>导入卡</button>':""}
+        ${n?'<button class="btn sm" data-gen title="让 AI 生成一张卡">✨</button>':""}
+        ${e.length>=2?'<button class="icon-btn" data-group title="发起群聊">👥</button>':""}
+        <button class="icon-btn" data-new title="新建角色">＋</button>
+      </div>
+      <div class="pad" style="padding-bottom:0">
+        <p class="small muted" style="margin-bottom:10px">${n?"支持 PNG 卡（chara / ccv3）和 JSON 卡；卡里的美化、正则、世界书会一起带进来。":"角色存在浏览器本地，换设备前记得在设置里导出备份。"}</p>
+      </div>
+      <div class="list">
+        ${e.length?e.map(r=>`
+          <div class="list-item" data-id="${d(r.id)}">
+            ${H(r)}
+            <div class="grow">
+              <div class="title">${d(r.name)} ${r.source==="tavern"?'<span class="chip" style="vertical-align:2px">酒馆</span>':""}</div>
+              <div class="sub">${d(r.personality||r.desc||"还没有设定")}</div>
+            </div>
+            <button class="icon-btn" data-edit="${d(r.id)}">⋯</button>
+          </div>`).join(""):`<div class="empty"><span class="big">🎭</span>还没有角色<br><br>
+            ${n?"点右上角「导入卡」，或在 C.AI / 酒馆里导出 PNG 卡":"点右上角 ＋ 建一个"}
+          </div>`}
+      </div>
+    </div>`,t.querySelectorAll(".list-item [data-edit]").forEach(r=>{r.onclick=l=>{l.stopPropagation(),rt(r.dataset.edit,a)}}),t.querySelectorAll(".list-item").forEach(r=>{r.onclick=()=>{if(r.dataset.lp==="1"){r.dataset.lp="";return}Ut(r.dataset.id)};let l=null;r.addEventListener("pointerdown",()=>{l=setTimeout(()=>{l=null,r.dataset.lp="1",Le(r.dataset.id,a,t)},520)}),["pointerup","pointerleave","pointercancel"].forEach(p=>r.addEventListener(p,()=>{l&&(clearTimeout(l),l=null)})),r.addEventListener("contextmenu",p=>{p.preventDefault(),Le(r.dataset.id,a,t)})});let o=t.querySelector("[data-import]");o&&(o.onclick=()=>Pa(a));let s=t.querySelector("[data-gen]");s&&(s.onclick=()=>Oa()),t.querySelector("[data-new]").onclick=()=>rt(null,a);let i=t.querySelector("[data-group]");i&&(i.onclick=()=>_a(e))}async function Ut(t){let e=(await x("chats")).filter(s=>s.cast&&s.cast[0]&&s.cast[0].id===t&&s.mode!=="scene"&&s.mode!=="group").sort((s,i)=>(i.updatedAt||0)-(s.updatedAt||0));if(e[0])return w(`chat/${e[0].id}`);let n=await A("chars",t);if(!n)return f("角色不存在");let o=O({mode:n.source==="tavern"?"tavern":"catbox",cast:[n],title:n.name,lore:await ot()});await b("chats",o),w(`chat/${o.id}`)}async function Pa(t){let a=await T(".png,.json,image/png,application/json");if(a){f("正在解析角色卡…",8e3);try{let{card:e,warnings:n}=await Ee(a),o="";(a.type==="image/png"||/\.png$/i.test(a.name))&&(o=await ct(a,512));let s=G({name:e.name||"未命名角色",gender:e.gender||"f",desc:e.description||"",personality:e.personality||"",scenario:e.scenario||"",greeting:e.firstMes||"",system:e.systemPrompt||"",mesExample:e.mesExample||"",postHistory:e.postHistory||"",creatorNotes:e.creatorNotes||"",avatar:o,source:"tavern",card:e,theme:e.theme||{html:"",css:""},regex:e.regex||[],lorebook:e.lorebook||[],tags:e.tags||[]});await b("chars",s),f(`已导入「${s.name}」${n&&n.length?"，"+n[0]:""}`,3200),Ut(s.id)}catch(e){console.error(e),f("导入失败："+(e.message||e),4e3)}}}async function ct(t,a){let e=await new Promise((n,o)=>{let s=new FileReader;s.onload=()=>n(s.result),s.onerror=()=>o(s.error),s.readAsDataURL(t)});try{let n=await new Promise((i,r)=>{let l=new Image;l.onload=()=>i(l),l.onerror=r,l.src=e}),o=Math.min(1,a/Math.max(n.width,n.height)),s=document.createElement("canvas");return s.width=Math.round(n.width*o),s.height=Math.round(n.height*o),s.getContext("2d").drawImage(n,0,0,s.width,s.height),s.toDataURL("image/jpeg",.82)}catch{return e}}async function rt(t,a="catbox",e=null){let n=t?await A("chars",t):null;n&&st(n);let o=await x("worlds"),s=n||G({gender:"f",seed:Math.floor(Math.random()*99999)});s.avatar||(s.avatar=S({..._(s.seed),seed:s.seed}));let{el:i,close:r}=k(`
+    <h3>${n?"编辑角色":"新建角色"}</h3>
+    <div class="row" style="align-items:flex-start;gap:12px">
+      <div style="width:96px;flex:none">
+        <img id="pv" src="${s.avatar}" style="width:96px;height:128px;object-fit:cover;border-radius:12px;background:#1d2230">
+        <div class="row" style="gap:6px;margin-top:6px">
+          <button class="btn sm" data-rand style="flex:1;padding:6px 4px">随机</button>
+          <button class="btn sm" data-up style="flex:1;padding:6px 4px">上传</button>
+        </div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div class="field"><label>名字</label>
+          <div class="row"><input class="input" name="name" value="${d(s.name==="未命名角色"?"":s.name)}" placeholder="例如 林晚晴">
+          <button class="btn sm" data-ai style="flex:none">✨</button></div></div>
+        <div class="field"><label>性别 / 形象</label>
+          <select class="select" name="gender">
+            <option value="f" ${s.gender==="f"?"selected":""}>女性形象</option>
+            <option value="m" ${s.gender==="m"?"selected":""}>男性形象</option>
+          </select></div>
+      </div>
+    </div>
+    <div class="field"><label>设定（身份、背景）</label><textarea class="textarea" name="desc" rows="3">${d(s.desc)}</textarea></div>
+    <div class="field"><label>性格与说话方式</label><textarea class="textarea" name="personality" rows="2">${d(s.personality)}</textarea></div>
+    <div class="field"><label>当前场景（可选）</label><textarea class="textarea" name="scenario" rows="2">${d(s.scenario)}</textarea></div>
+    <div class="field"><label>开场白（可选）</label><textarea class="textarea" name="greeting" rows="2">${d(s.greeting)}</textarea></div>
+    <div class="field"><label>所属世界（可选）</label>
+      <select class="select" name="worldId">
+        <option value="">不指定</option>
+        ${o.map(m=>`<option value="${d(m.id)}" ${s.worldId===m.id?"selected":""}>${d(m.name)}</option>`).join("")}
+      </select></div>
+    <div class="field"><label>扮演要求（可选）</label><textarea class="textarea" name="system" rows="2" placeholder="例如：说话简短，习惯用反问句">${d(s.system)}</textarea></div>
+    <div class="foot">
+      ${n?'<button class="btn danger" data-del>删除</button>':""}
+      ${n?'<button class="btn ghost" data-exp>导出</button>':""}<button class="btn ghost" data-pick>📚 资料</button><button class="btn ghost" data-revive>复活</button>
+      <button class="btn ghost" data-cancel>取消</button>
+      <button class="btn primary" data-save>保存</button>
+    </div>`),l=i.querySelector("#pv"),p=i.querySelector("[data-rand]");p.onclick=()=>{let m=Math.floor(Math.random()*99999),u=i.querySelector("[name=gender]").value;s.seed=m,s.look={..._(m),gender:u},s.avatar=S({..._(m),gender:u,seed:m}),s.portraits&&s.portraits[s.activePortrait]&&(s.portraits[s.activePortrait].url=s.avatar),l.src=s.avatar},i.querySelector("[data-up]").onclick=async()=>{let m=await T("image/*");m&&(s.avatar=await ct(m,512),s.portraits&&s.portraits[s.activePortrait]&&(s.portraits[s.activePortrait].url=s.avatar),l.src=s.avatar)},i.querySelector("[data-ai]").onclick=async()=>{let m=await at("角色想法","","例如：嘴硬心软的天才医师");if(m!=null){f("正在生成…",2e4);try{let u=await U("char"),g=await Y(`${u?u+`
+
+`:""}用中文写一个角色扮演用的角色。想法：${m||"你自己想一个有意思的"}。
+只输出 JSON，不要代码块：
+{"name":"名字","gender":"f或m","desc":"身份与背景，80字以内","personality":"性格与说话方式，60字以内","scenario":"初次见面时的场景，40字以内","greeting":"开场白，一到两句"}`,{maxTokens:700}),v=J(g),E=(W,ae)=>{let ne=i.querySelector(`[name=${W}]`);ne&&ae&&(ne.value=ae)};E("name",v.name),E("desc",v.desc),E("personality",v.personality),E("scenario",v.scenario),E("greeting",v.greeting),(v.gender==="m"||v.gender==="f")&&(i.querySelector("[name=gender]").value=v.gender);let z=Math.floor(Math.random()*99999);s.seed=z,s.avatar=S({..._(z),gender:v.gender==="m"?"m":"f",seed:z}),l.src=s.avatar,f("生成好了，检查一下再保存",3e3)}catch(u){f(u.message||"生成失败",4e3)}}};let _pk=i.querySelector("[data-pick]");_pk&&(_pk.onclick=()=>zPickDialog(s,()=>{}));let _rv=i.querySelector("[data-revive]");_rv&&(_rv.onclick=()=>{s.dead=!1;s.deadAt=0;f(s.dead?"":"已复活，保存后生效")});let y=i.querySelector("[data-exp]");y&&(y.onclick=()=>{Z(`${s.name}-角色卡.json`,JSON.stringify({spec:"chara_card_v2",spec_version:"2.0",data:{name:s.name,description:s.desc,personality:s.personality,scenario:s.scenario,first_mes:s.greeting,system_prompt:s.system,avatar:s.avatar,extensions:{theme:s.theme,regex:s.regex,lorebook:s.lorebook}}},null,2))}),i.querySelector("[data-cancel]").onclick=r;let h=i.querySelector("[data-del]");h&&(h.onclick=async()=>{await M(`删除「${s.name}」？已开的对话不会删除。`,"删除",!0)&&(await B("chars",s.id),r(),f("已删除"),e?e():w(`chars/${a}`))}),i.querySelector("[data-save]").onclick=async()=>{let m=g=>i.querySelector(`[name=${g}]`).value.trim(),u=m("name");if(!u)return f("名字不能为空");Object.assign(s,{name:u,gender:m("gender"),desc:m("desc"),personality:m("personality"),scenario:m("scenario"),greeting:m("greeting"),system:m("system"),worldId:i.querySelector("[name=worldId]").value,avatar:s.avatar,seed:s.seed,updatedAt:Date.now()}),await b("chars",s),r(),f("已保存"),e?e():w(`chars/${a}`)}}async function _a(t){let{el:a,close:e}=k(`
+    <h3>发起群聊</h3>
+    <div class="small muted" style="margin-bottom:10px">选 2 个以上角色。他们会互相搭话，你也能单独@某个角色。</div>
+    <div class="list" style="padding:0;max-height:46vh;overflow-y:auto">
+      ${t.map(s=>`
+        <div class="list-item" data-pick="${d(s.id)}">
+          ${H(s)}
+          <div class="grow"><div class="title">${d(s.name)}</div><div class="sub">${d(s.personality||s.desc||"")}</div></div>
+          <span class="chip">选择</span>
+        </div>`).join("")}
+    </div>
+    <div class="field" style="margin-top:12px"><label>群名（可选）</label>
+      <input class="input" name="gtitle" placeholder="例如 深夜食堂"></div>
+    <div class="foot"><button class="btn ghost" data-cancel>取消</button>
+      <button class="btn primary" data-ok>创建</button></div>`),n=new Set;a.querySelectorAll("[data-pick]").forEach(s=>{s.onclick=()=>{let i=s.dataset.pick;n.has(i)?(n.delete(i),s.classList.remove("selected"),s.querySelector(".chip").textContent="选择"):(n.add(i),s.classList.add("selected"),s.querySelector(".chip").textContent="已选")}});let o=a.querySelector("[data-exp]");o&&(o.onclick=()=>{Z(`${c.name}-角色卡.json`,JSON.stringify({spec:"chara_card_v2",spec_version:"2.0",data:{name:c.name,description:c.desc,personality:c.personality,scenario:c.scenario,first_mes:c.greeting,system_prompt:c.system,avatar:c.avatar,extensions:{theme:c.theme,regex:c.regex,lorebook:c.lorebook}}},null,2))}),a.querySelector("[data-cancel]").onclick=e,a.querySelector("[data-ok]").onclick=async()=>{let s=t.filter(l=>n.has(l.id));if(s.length<2)return f("至少选两个角色");let i=a.querySelector("[name=gtitle]").value.trim(),r=O({mode:"group",cast:s,title:i,lore:await ot()});await b("chats",r),e(),w(`chat/${r.id}`)}}async function Oa(){let t=await at("想要什么样的卡？","","例如：嘴硬心软的剑客，古风");if(t!=null){f("正在生成，稍等…",3e4);try{let a=await U("tavern"),e=await Y(`${a?a+`
+
+`:""}生成一张完整的中文酒馆角色卡。想法：${t||"你自己想一个"}。
+只输出 JSON，不要代码块：
+{"name":"名字","gender":"f/m","desc":"身份背景 80 字内","personality":"性格与说话方式","scenario":"初次见面场景",
+"greeting":"开场白，一句台词加一个动作","system":"扮演要求",
+"portrait":{"hair":0,"outfit":2,"palette":0,"eyeStyle":"normal"},
+"theme":{"html":"一段美化 HTML，含内联样式","css":""},
+"regex":[{"findRegex":"要替换的词","replaceString":"替换成","flags":"g"}],
+"lorebook":[{"keys":["关键词"],"content":"设定内容"}]}`,{maxTokens:1600}),n=J(e),o=n.portrait||{},s=Math.floor(Math.random()*99999),i=S({seed:s,gender:n.gender==="m"?"m":"f",hair:o.hair??0,outfit:o.outfit??2,palette:o.palette??0,eyeStyle:o.eyeStyle||"normal"}),r=G({name:n.name||"无名角色",gender:n.gender==="m"?"m":"f",avatar:i,seed:s,desc:n.desc||"",personality:n.personality||"",scenario:n.scenario||"",greeting:n.greeting||"",system:n.system||"",source:"tavern",tags:["AI 生成"],theme:{html:n.theme&&n.theme.html||"",css:n.theme&&n.theme.css||""},regex:Array.isArray(n.regex)?n.regex.filter(l=>l&&l.findRegex):[],lorebook:Array.isArray(n.lorebook)?n.lorebook.filter(l=>l&&l.content):[],card:{ai:!0}});await b("chars",r),f("生成好了："+r.name,3e3),Ut(r.id)}catch(a){console.error(a),f(a.message||"生成失败",4e3)}}}async function Le(t,a,e){let n=await A("chars",t);if(!n)return;let{el:o,close:s}=k(`
+    <h3>${d(n.name)}</h3>
+    <div class="list" style="padding:0">
+      <button class="list-item" data-a="edit"><span class="grow">编辑设定</span></button>
+      <button class="list-item" data-a="portrait"><span class="grow">换立绘（预设 / 随机 / 上传）</span></button>
+      <button class="list-item" data-a="del"><span class="grow" style="color:var(--bad)">删除角色</span></button>
+    </div>
+    <div class="foot"><button class="btn ghost" data-c>取消</button></div>`);o.querySelector("[data-c]").onclick=s,o.querySelector("[data-a=edit]").onclick=()=>{s(),rt(t,a,()=>Et(e,a))},o.querySelector("[data-a=portrait]").onclick=()=>{s(),lt(n,()=>Et(e,a))},o.querySelector("[data-a=del]").onclick=async()=>{s(),await M(`删除「${n.name}」？对话记录会保留。`,"删除",!0)&&(await B("chars",n.id),f("已删除"),Et(e,a))}}async function lt(t,a){st(t);let e=t.activePortrait||0,n=t.portraits.map((l,p)=>`
+    <button data-pick="${p}" style="position:relative;padding:0;border:1px solid ${p===e?"var(--acc)":"var(--line)"};border-radius:10px;overflow:hidden;background:var(--panel2)">
+      <img src="${l.url}" style="width:100%;height:104px;object-fit:cover;display:block" alt="">
+      <span style="display:block;font-size:10px;color:${p===e?"var(--acc)":"var(--dim)"};padding:2px 0 5px">${d(l.label||"立绘"+(p+1))}</span>
+    </button>`).join(""),{el:o,close:s}=k(`
+    <h3>${d(t.name)} · 立绘（${t.portraits.length}）</h3>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:56vh;overflow-y:auto">
+      ${n}
+      <button data-add style="border:1px dashed var(--line);border-radius:10px;background:transparent;color:var(--dim);min-height:104px;font-size:22px">＋
+        <span style="display:block;font-size:10px;margin-top:4px">新增</span></button>
+    </div>
+    <div class="foot">
+      <button class="btn danger" data-del ${t.portraits.length<2?"disabled":""}>删除这张</button>
+      <button class="btn ghost" data-c>关闭</button>
+    </div>`),i=async()=>{st(t),t.updatedAt=Date.now(),await b("chars",t)};o.querySelector("[data-c]").onclick=()=>{s(),a&&a()},o.querySelectorAll("[data-pick]").forEach(l=>{l.onclick=async()=>{t.activePortrait=Number(l.dataset.pick),await i(),s(),f("已切换立绘"),a&&a()}}),o.querySelector("[data-del]").onclick=async()=>{t.portraits.length<2||await M("删掉这张立绘？","删除",!0)&&(t.portraits.splice(e,1),t.activePortrait=Math.max(0,e-1),await i(),s(),lt(t,a))},o.querySelector("[data-add]").addEventListener("click",()=>{try{s()}catch(l){console.info("close err",l)}try{Ne(t,()=>lt(t,a))}catch(l){console.info("addPortrait err",l)}})}async function Ne(t,a){let{el:e,close:n}=k(`
+    <h3>新增立绘</h3>
+    <div class="field"><label>画哪一档</label>
+      <div class="row wrap" style="gap:6px">
+        ${["初始","内衣","全裸","自定义"].map((i,r)=>`<button class="chip ${r===0?"on":""}" data-state="${i}">${i}</button>`).join("")}
+      </div>
+      <div class="hint">会沿用「${d(t.name)}」的脸型、发色和瞳色，只换衣服和身体状态。</div></div>
+    <div class="list" style="padding:0">
+      <button class="list-item" data-a="ai"><span class="grow">🤖 让 AI 按人设画一张（要配 API Key）</span></button>
+      <button class="list-item" data-a="trio"><span class="grow">⚡ 一次补齐 初始 + 内衣 + 全裸</span></button>
+      <button class="list-item" data-a="rand"><span class="grow">🎲 同一个人，换个姿势配色</span></button>
+      <button class="list-item" data-a="preset"><span class="grow">📚 从 20 个预设里挑（会换脸）</span></button>
+      <button class="list-item" data-a="up"><span class="grow">📤 上传自己的图片</span></button>
+    </div>
+    <div class="foot"><button class="btn ghost" data-c>取消</button></div>`),o="初始";e.querySelectorAll("[data-state]").forEach(i=>{i.onclick=()=>{o=i.dataset.state,e.querySelectorAll("[data-state]").forEach(r=>r.classList.toggle("on",r===i))}});let s=async(i,r)=>{t.portraits.push({id:"p"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),label:r+"·"+o,url:i,state:o}),t.activePortrait=t.portraits.length-1,st(t),t.updatedAt=Date.now(),await b("chars",t),n(),f("已添加"),a()};e.querySelector("[data-c]").onclick=()=>{n(),a()},
+e.querySelector("[data-a=ai]").onclick=async()=>{let i=await at("想让 AI 画成什么样","","例如：冷艳一点，穿黑色礼服；留空就按人设画");if(i==null)return;n(),f("AI 正在挑参数…",3e4);try{let r=await zAi(t,i);t.look={hair:r.hair,outfit:r.outfit,palette:r.palette,accessory:r.accessory,eyeStyle:r.eyeStyle,expr:r.expr,bg:r.bg,mark:r.mark,hairAcc:r.hairAcc},t.anatomy=r.anatomy,t.portraits.push({id:"p"+Date.now().toString(36),label:"AI·"+(r.state||o)+(r.dress?"·"+r.dress:""),url:S({...zBase(t),...t.look,exposure:zEx(r.state||o),anatomy:r.anatomy}),state:r.state||o}),t.activePortrait=t.portraits.length-1,st(t),t.updatedAt=Date.now(),await b("chars",t),f(r.reason?"AI：已添加 · "+r.reason:"AI 画好了",3200),a()}catch(r){console.error(r),f(r.message||"AI 生成失败，检查 API Key",4e3)}},
+e.querySelector("[data-a=trio]").onclick=async()=>{let b0=zBase(t),an=t.anatomy||An(b0.seed);t.look=b0;for(let[sx,ex]of[["初始",0],["内衣",1],["全裸",2]]){if(zHas(t,sx))continue;t.portraits.push({id:"p"+Date.now().toString(36)+ex+Math.random().toString(36).slice(2,5),label:sx,url:S({...b0,exposure:ex,anatomy:an}),state:sx})}t.activePortrait=t.portraits.length-1,st(t),t.updatedAt=Date.now(),await b("chars",t),n(),f("已补齐三档"),a()},
+e.querySelector("[data-a=rand]").onclick=()=>{let b0=zBase(t),lk={...b0,outfit:Math.floor(Math.random()*7),expr:Math.floor(Math.random()*6),bg:Math.floor(Math.random()*6),mark:Math.floor(Math.random()*4)-1,hairAcc:Math.floor(Math.random()*4)-1};t.look=lk,S({...lk,exposure:zEx(o),anatomy:t.anatomy||An(b0.seed)}),s(S({...lk,exposure:zEx(o),anatomy:t.anatomy||An(b0.seed)}),"换装"),t.look=lk},
+e.querySelector("[data-a=up]").onclick=async()=>{let i=await T("image/*");i&&s(await ct(i,512),"上传")},
+e.querySelector("[data-a=preset]").onclick=()=>{n(),za(t,a,o)}}async function za(t,a,sx){let e=Math.floor(Math.random()*9999),ex=zEx(sx||"初始"),n=R.map((i,r)=>`
+    <button data-p="${r}" style="padding:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel2)">
+      <img src="${S({seed:e+r,gender:i.gender,hair:i.hair,outfit:i.outfit,palette:i.palette,accessory:i.accessory,eyeStyle:i.eyeStyle,exposure:ex,anatomy:An(e+r)})}" style="width:100%;height:96px;object-fit:cover;display:block">
+      <span style="display:block;font-size:10px;color:var(--dim);padding:2px 0 4px">${d(i.name)}</span>
+    </button>`).join(""),{el:o,close:s}=k(`
+    <h3>挑一张加到「${d(t.name)}」</h3>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-height:56vh;overflow-y:auto">${n}</div>
+    <div class="foot"><button class="btn ghost" data-c>取消</button></div>`);o.querySelector("[data-c]").onclick=()=>{s(),a()},o.querySelectorAll("[data-p]").forEach(i=>{i.onclick=async()=>{let r=R[Number(i.dataset.p)],l=e+Number(i.dataset.p);t.look={hair:r.hair,outfit:r.outfit,palette:r.palette,accessory:r.accessory,eyeStyle:r.eyeStyle,expr:0,bg:0,mark:-1,hairAcc:-1},t.portraits.push({id:"p"+Date.now().toString(36),label:r.name,url:S({seed:t.seed||l,gender:r.gender,hair:r.hair,outfit:r.outfit,palette:r.palette,accessory:r.accessory,eyeStyle:r.eyeStyle,exposure:ex,anatomy:An(l)}),state:sx||"初始"}),t.activePortrait=t.portraits.length-1,Wa(t),t.updatedAt=Date.now(),await b("chars",t),s(),f("已添加"),a()}})}var dt=F(()=>{P();D();C();N();yt();Ht();Q()});D();P();N();N();var X=window.matchMedia?window.matchMedia("(prefers-color-scheme: dark)"):null;function fa(t){let a=t||q().theme||"auto";return a==="light"?"light":a==="dark"||X&&X.matches?"dark":"light"}function St(t){document.documentElement.dataset.theme=fa(t)}function ve(t){nt({theme:t}),St(t)}if(X){let t=()=>{(q().theme||"auto")==="auto"&&St("auto")};X.addEventListener?X.addEventListener("change",t):X.addListener&&X.addListener(t)}var Nt={};K(Nt,{mount:()=>ya});P();D();C();N();var ma=[{key:"catbox",emoji:"📦",name:"猫箱",desc:"和单个角色一对一聊天，人设长期保存"},{key:"tavern",emoji:"🍺",name:"酒馆",desc:"导入 SillyTavern 角色卡，支持美化与世界书"},{key:"world",emoji:"🌍",name:"大世界",desc:"多个角色同场互动，立绘、剧情、对战"},{key:"life",emoji:"🕯️",name:"人生模拟",desc:"从少年到暮年，随机事件与选择"}];async function ya(t){let a=(await x("chats")).filter(e=>e.mode!=="life").sort((e,n)=>(n.updatedAt||0)-(e.updatedAt||0)).slice(0,8);t.innerHTML=`
+    <div class="screen">
+      <div class="hero">
+        <div class="row">
+          <div style="flex:1"><h2>角色宇宙</h2><p>角色、世界、剧情与选择，都在你自己的浏览器里</p></div>
+          <a class="icon-btn" href="#/settings" title="设置">⚙️</a>
+          <a class="icon-btn" href="#/lib" title="提示词库 / 世界观库">📚</a>
+        </div>
+      </div>
+      ${q().apiKey?"":'<a href="#/settings" style="display:block;margin:4px 16px 0;padding:11px 14px;border-radius:12px;background:rgba(245,165,36,.12);border:1px solid rgba(245,165,36,.35);color:#f5c06a;font-size:13px;text-decoration:none">还没填 API Key，先去设置里填一个 →</a>'}
+      <div class="mode-grid">
+        ${ma.map(e=>`
+          <div class="mode" data-go="${e.key}">
+            <span class="emoji">${e.emoji}</span>
+            <div><b>${e.name}</b><span>${e.desc}</span></div>
+          </div>`).join("")}
+      </div>
+      <div class="row" style="padding:0 16px 4px;gap:8px">
+        <a class="chip" href="#/chars/catbox">👥 群聊</a>
+        <a class="chip" href="#/lib">📚 资料库</a>
+        <a class="chip" href="#/settings">⚙️ 设置</a>
+      </div>
+      <div class="section-title">最近对话<span class="spacer"></span>
+        <a href="#/chars/catbox" class="small">全部</a>
+      </div>
+      <div class="recent">
+        ${a.length?a.map(e=>{let n=e.cast&&e.cast[0]?e.cast[0]:{name:e.title};return`<div class="recent-item" data-chat="${d(e.id)}">
+            ${H(n)}
+            <div style="flex:1;min-width:0">
+              <div class="title" style="font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d(e.title)}</div>
+              <div class="small muted" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d(e.preview||e.mode)}</div>
+            </div>
+            <span class="chip">${ha(e.mode)}</span>
+          </div>`}).join(""):'<div class="empty"><span class="big">✦</span>还没有对话，选一个模式开始</div>'}
+      </div>
+    </div>`,t.querySelectorAll("[data-go]").forEach(e=>{e.onclick=()=>{let n=e.dataset.go;n==="world"?w("worlds"):n==="life"?w("life"):w(`chars/${n}`)}}),t.querySelectorAll("[data-chat]").forEach(e=>{e.onclick=()=>w(`chat/${e.dataset.chat}`)})}function ha(t){return{catbox:"猫箱",tavern:"酒馆",scene:"大世界",life:"人生"}[t]||t}dt();var Zt={};K(Zt,{mount:()=>V,parseChoices:()=>ze});P();D();C();N();Q();Ht();dt();var pt=null;async function V(t,a){let e=await A("chats",a);if(!e)return f("对话不存在"),w("home");t.innerHTML=Da(e);let n=t.querySelector("#msgs"),o=t.querySelector("#chatBg");o&&e.cast[0]&&e.cast[0].avatar&&(o.style.backgroundImage=`url("${e.cast[0].avatar}")`);let s=t.querySelector("#input"),i=t.querySelector("#send"),r=await L(a),l=e.mode==="scene"?(String(q().worldIntro||"").trim()||(e.cast.length===1&&e.cast[0]?e.cast[0].greeting:"")):(e.cast.length===1&&e.cast[0]&&e.cast[0].greeting);!r.length&&l&&(await ht(a,"assistant",l),r=await L(a)),r.forEach(m=>{let u=At(e,m);Kt(u,e,m),n.appendChild(u)}),tt();let p=m=>{s.value=m,Bt(t,e,n,s,i)};Ja(t,e,n,s,i),Ga(t,e,n,s,i);zLoadLibs();let _th=(e.cast[0]&&e.cast[0].theme)||{},_st=document.getElementById("cardTheme");_st||(_st=document.createElement("style"),_st.id="cardTheme",document.head.appendChild(_st));_st.textContent=_th.css?String(_th.css).replace(/\.mes_text/g,".txt").replace(/\.mes(?![_a-zA-Z0-9])/g,".msg"):"";let y=t.querySelector("#beautyBtn");y&&(y.onclick=()=>Ya(e));let h=t.querySelector("#portraitBtn");h&&(h.onclick=()=>De(e,p));let _sb=t.querySelector("#suggestBtn");_sb&&(_sb.onclick=function(){zSuggest(e,function(v){s.value=v;Ft(s);s.focus()})});let _lb=t.querySelector("#lenBtn");if(_lb){let _L=[["short","短"],["mid","中"],["long","长"]],_cur=q().replyLen||"mid",_lab=function(){var f2=_L.find(function(x){return x[0]===_cur});_lb.textContent="长度："+(f2?f2[1]:"中")};_lab();_lb.onclick=function(){var n2=(_L.findIndex(function(x){return x[0]===_cur})+1)%3;_cur=_L[n2][0];nt({replyLen:_cur});_lab();f("回复长度："+_L[n2][1])}};s.addEventListener("input",()=>Ft(s)),setTimeout(()=>tt(),50)}function Da(t){let a=t.cast[0]||{name:t.title},e=t.cast.length>1;return`
+  <div class="screen">
+    <div class="topbar">
+      <a class="icon-btn" href="#/home">‹</a>
+      ${H(a)}
+      <div style="flex:1;min-width:0">
+        <h1 style="font-size:15px">${d(t.title)}</h1>
+        <div class="small muted" style="margin-top:-2px">${e?d(t.cast.map(n=>n.name).join(" · ")):d(t.mode==="tavern"?"酒馆":"猫箱")}</div>
+      </div>
+      ${t.cast[0]?'<button class="icon-btn" id="portraitBtn" title="立绘互动">🧍</button>':""}
+      ${t.cast[0]&&t.cast[0].theme&&(t.cast[0].theme.html||t.cast[0].theme.css)?'<button class="icon-btn" id="beautyBtn" title="美化">🎨</button>':""}
+      <button class="icon-btn" id="menuBtn">⋯</button>
+    </div>
+    <div class="chat-body" id="msgs"><div class="chat-bg" id="chatBg"></div></div>
+    <div class="composer">
+      <div class="row" style="gap:6px;margin-bottom:6px"><button class="chip" id="lenBtn">长度</button><span style="flex:1"></span><button class="chip" id="suggestBtn">✨ 帮我想</button></div>
+      <textarea class="textarea" id="input" rows="1" placeholder="说点什么…"></textarea>
+      <button class="send" id="send">➤</button>
+    </div>
+  </div>`}function At(t,a,e=!1){if(!e&&a.role!=="user"&&t.cast.length>1){let n=Ha(a.content,t.cast);if(n.length>1){let o=document.createElement("div");o.className="group-block",o.style.cssText="display:flex;flex-direction:column;gap:8px";for(let s of n)o.appendChild(Jt(t,s.name,s.text,!1));return a.options&&a.options.length&&o.appendChild(Oe(a.options)),o}}return Jt(t,null,a.content,e,a.role==="user",a.options)}function Jt(t,a,e,n,o=!1,s){let i=document.createElement("div");if(t.mode==="scene"&&!o){i.className="msg narrative"+(n?" streaming":"");i.innerHTML=`<div class="bubble"><span class="txt">${Ra(e)}</span></div>`;return s&&s.length&&i.appendChild(Oe(s)),i}i.className=`msg ${o?"user":"assistant"}${n?" streaming":""}`;let r=o?{name:"你"}:a?t.cast.find(l=>l.name===a)||{name:a}:t.cast[0]||{name:t.title};return i.innerHTML=`${o?"":H(r)}
+    <div class="bubble">${!o&&(t.cast.length>1||a)?`<div class="name">${d(r.name)}</div>`:""}<span class="txt">${Ra(e)}</span></div>`,s&&s.length&&i.appendChild(Oe(s)),i}function Oe(t){let a=document.createElement("div");return a.className="opts",a.style.cssText="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 0 44px;max-width:calc(100% - 50px)",t.forEach(e=>{let n=document.createElement("button");n.className="chip",n.textContent=e,n.onclick=()=>{let o=document.getElementById("input");o&&(o.value=e,o.focus(),Ft(o))},a.appendChild(n)}),a}function Ha(t,a){let e=new Set(a.map(s=>s.name)),n=[],o=null;for(let s of String(t||"").split(`
+`)){let i=s.match(/^\s*([^\s：:]{1,14})[：:]\s*(.*)$/);i&&(e.has(i[1])||n.length&&e.size&&i[1].length<=8)?(o&&n.push(o),o={name:i[1],text:i[2]}):o?o.text+=(o.text?`
+`:"")+s:o={name:a[0]?a[0].name:"旁白",text:s}}return o&&n.push(o),n.filter(s=>s.text.trim())}function Ra(t){return d(t).replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\n{2,}/g,"<br><br>").replace(/\n/g,"<br>")}function tt(){let t=document.getElementById("msgs");t&&(t.scrollTop=t.scrollHeight)}function Ft(t){t.style.height="auto",t.style.height=Math.min(132,t.scrollHeight)+"px"}function Ga(t,a,e,n,o){let s=()=>{if(pt){pt.abort();return}Bt(t,a,e,n,o)};o.onclick=s,n.addEventListener("keydown",i=>{if(i.key==="Enter"&&!i.shiftKey){if(i.preventDefault(),pt)return;s()}})}async function Bt(t,a,e,n,o,s={}){let i=(s.text!=null?s.text:n.value).trim();if(!i)return;let _raw=i,_rx=a.cast[0]&&a.cast[0].regex;_rx&&_rx.length&&(i=Ae(i,_rx,"user"));if(s.keepInput||(n.value="",Ft(n)),!s.skipUser){let m=await ht(a.id,"user",_raw),u=At(a,m);Kt(u,a,m),e.appendChild(u),tt()}let r=Jt(a,null,"",!0);e.appendChild(r),tt();let l=r.querySelector(".txt");o.classList.add("stop"),o.textContent="■",n.disabled=!0,pt=new AbortController;let p=await L(a.id),h=[{role:"system",content:ue(a,i)},...fe(p)];try{let{text:m}=await it(h,{signal:pt.signal,onDelta:u=>{l.textContent=u,tt()}});Ua(a,e,r,m)}catch(m){if(r.remove(),m.name==="AbortError"){let u=l.textContent||"";if(u.trim()){let g=await ht(a.id,"assistant",u);e.appendChild(At(a,g))}f("已停止")}else{console.error(m),f(m.message||"请求失败",4e3);let u=document.createElement("div");u.className="chat-empty",u.style.padding="12px",u.innerHTML=`<span class="small">${d(m.message||"出错了")}</span>`,e.appendChild(u)}}finally{pt=null,o.classList.remove("stop"),o.textContent="➤",n.disabled=!1,n.focus(),tt()}}async function Ua(t,a,e,n){let o=n,s=t.cast[0]&&t.cast[0].regex;s&&s.length&&(o=Ae(o,s,"ai"));let{body:i,options:r}=ze(o,t.choices);if(!i.trim()){e.remove(),f("模型没有返回内容，可能是被内容审核拦了，换个说法再试");return}let l=await ht(t.id,"assistant",i);r&&r.length&&(l.options=r,await b("messages",l)),e.remove();let p=At(t,l);Kt(p,t,l),a.appendChild(p),tt()}function ze(t,a){if(!a)return{body:t,options:[]};let e=t.match(/\[选项\]\s*\n?([\s\S]*)$/);if(!e)return{body:t,options:[]};let n=e[1].split(`
+`).map(s=>s.trim()).filter(Boolean),o=[];for(let s of n){let i=s.replace(/^\d+[.、)]\s*/,"").replace(/^[-*]\s*/,"").trim();if(i&&o.push(i),o.length>=4)break}return o.length?{body:t.slice(0,e.index).trim(),options:o}:{body:t,options:[]}}function Ja(t,a,e,n,o){t.querySelector("#menuBtn").onclick=()=>{let{el:s,close:i}=k(`
+      <h3>${d(a.title)}</h3>
+      <div class="list" style="padding:0">
+        <button class="list-item" data-a="choices"><span class="grow">选项模式</span><span class="chip ${a.choices?"on":""}">${a.choices?"开":"关"}</span></button>
+        ${a.cast.length===1?'<button class="list-item" data-a="profile"><span class="grow">编辑角色设定</span></button>':""}
+        <button class="list-item" data-a="regen"><span class="grow">重新生成上一条</span></button>
+        <button class="list-item" data-a="memory"><span class="grow">压缩前情（把前面的剧情总结成记忆）</span>${a.memory?'<span class="chip">已有</span>':""}</button>
+        <button class="list-item" data-a="new"><span class="grow">用同样的角色开新对话</span></button>
+        <button class="list-item" data-a="export"><span class="grow">导出这段对话（Markdown）</span></button>
+        <button class="list-item" data-a="clear"><span class="grow" style="color:var(--warn)">清空消息</span></button>
+        <button class="list-item" data-a="delete"><span class="grow" style="color:var(--bad)">删除对话</span></button>
+      </div>
+      <div class="foot"><button class="btn ghost" data-close>关闭</button></div>`);s.querySelector("[data-close]").onclick=i,s.querySelector("[data-a=choices]").onclick=async()=>{a.choices=!a.choices,a.updatedAt=Date.now(),await b("chats",a),i(),f(a.choices?"已开启选项模式":"已关闭选项模式")};let r=s.querySelector("[data-a=profile]");r&&(r.onclick=async()=>{i(),await rt(a.cast[0].id,a.mode==="tavern"?"tavern":"catbox",()=>V(t,a.id))}),s.querySelector("[data-a=regen]").onclick=async()=>{i();let l=await L(a.id),p=[...l].reverse().find(g=>g.role==="assistant"),y=[...l].reverse().find(g=>g.role==="user");if(!y)return f("还没有可重新生成的消息");p&&await B("messages",p.id),await V(t,a.id);let h=t.querySelector("#msgs"),m=t.querySelector("#input"),u=t.querySelector("#send");await Bt(t,a,h,m,u,{text:y.content,skipUser:!0,keepInput:!0})},s.querySelector("[data-a=new]").onclick=async()=>{i();let l=a.worldId?await A("worlds",a.worldId):null,p=O({mode:a.mode,cast:a.cast,world:l,lore:a.lore||[]});await b("chats",p),w(`chat/${p.id}`)},s.querySelector("[data-a=memory]").onclick=async()=>{i(),await Qa(a)},s.querySelector("[data-a=export]").onclick=async()=>{let l=await L(a.id),p=[`# ${a.title}`,""].concat(l.map(y=>`**${y.role==="user"?"你":a.cast[0]?a.cast[0].name:"AI"}**：${y.content}`)).join(`
+
+`);Z(`${a.title}.md`,p,"text/markdown"),i()},s.querySelector("[data-a=clear]").onclick=async()=>{if(!await M("清空这段对话的所有消息？不可恢复。","清空",!0))return;let l=await L(a.id);for(let p of l)await B("messages",p.id);i(),V(t,a.id)},s.querySelector("[data-a=delete]").onclick=async()=>{if(!await M("删除整段对话？不可恢复。","删除",!0))return;let l=await L(a.id);for(let p of l)await B("messages",p.id);await B("chats",a.id),i(),w("home")}}}function An(seed){let a=ce((seed||1)*7+13);return{bust:a(),areola:a(),vulva:a(),pubes:a(),depth:a()}}
+function zEx(s){return s==="全裸"?2:s==="内衣"?1:0}
+function zBust(pal,id,an){const s=an.bust,r=an.areola,rx=20+s*12,ry=19+s*12,cy=279+s*6,d=26+s*7;let o="";for(const k of[-1,1]){const cx=150+k*d;o+=`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#${id}skin)"/>`;o+=`<path d="M${cx} ${cy-ry} a${rx} ${ry} 0 0 1 0 ${ry*2}" fill="#000" opacity="0.05"/>`;o+=`<ellipse cx="${cx}" cy="${cy+ry*0.3}" rx="${8+r*7}" ry="${7+r*6}" fill="#c2707a" opacity="0.62"/>`;o+=`<circle cx="${cx}" cy="${cy+ry*0.3}" r="${3+r*2}" fill="#a0525c"/>`;o+=`<path d="M${cx-rx*0.58} ${cy-ry*0.42} q-5 ${ry*0.34} -2 ${ry*0.62}" stroke="#fff" stroke-width="3" opacity="0.13" fill="none" stroke-linecap="round"/>`;o+=`<path d="M${cx-rx*0.92} ${cy+ry*0.12} q${rx*0.92} ${ry*1.05} ${rx*1.84} 0" stroke="#000" stroke-width="4.5" opacity="0.055" fill="none"/>`;o+=`<path d="M${cx} ${cy+ry*0.95} q${k*5} 7 ${k*2} 12" stroke="#000" stroke-width="2" opacity="0.05" fill="none"/>`}return o}
+function zVulva(pal,id,an){const v=an.vulva,w=17+v*7,h=14+v*6,cy=390;
+return`<ellipse cx="150" cy="${cy-h-7}" rx="${w*0.86}" ry="9" fill="${pal.skin2}"/>
+<path d="M150 ${cy-h} C ${150-w*0.5} ${cy-h*0.92}, ${150-w} ${cy-h*0.3}, ${150-w} ${cy+h*0.14} C ${150-w} ${cy+h*0.72}, ${150-w*0.5} ${cy+h}, 150 ${cy+h} C ${150+w*0.5} ${cy+h}, ${150+w} ${cy+h*0.72}, ${150+w} ${cy+h*0.14} C ${150+w} ${cy-h*0.3}, ${150+w*0.5} ${cy-h*0.92}, 150 ${cy-h} Z" fill="#a95b65"/>
+<path d="M150 ${cy-h*0.82} v${h*1.42}" stroke="#57242c" stroke-width="2.1" stroke-linecap="round"/>
+<ellipse cx="150" cy="${cy-h*0.88}" rx="${2.4+v*1.3}" ry="${2+v*1}" fill="#cb7f88"/>
+<path d="M${150-w*0.5} ${cy-h*0.1} q${w*0.5} ${h*0.42} ${w} 0" stroke="#7d3a44" stroke-width="1.1" fill="none" opacity="0.5"/>
+<ellipse cx="150" cy="${cy+h*0.44}" rx="${w*0.22}" ry="${h*0.12}" fill="#5c262f" opacity="0.6"/>`}
+function zPubes(pal,id,an){const p=an.pubes;if(p<0.32)return"";const w=16+an.vulva*8;return`<path d="M${150-w} ${390-17} q${w} -15 ${w*2} 0 q-${w*0.4} 9 -${w} 12 q-${w*0.6} -3 -${w} -12 Z" fill="#2a1a1e" opacity="${0.22+p*0.42}"/>`}
+function zAnus(pal,id,an){const v=an.vulva,cy=416;return`<ellipse cx="150" cy="${cy}" rx="${5.5+v*2.4}" ry="2.8" fill="#8a4a52"/>
+<ellipse cx="150" cy="${cy}" rx="${2.2+v*0.9}" ry="1.4" fill="#37181e"/>
+<ellipse cx="150" cy="${cy}" rx="${8+v*2.4}" ry="3.8" fill="none" stroke="#000" stroke-width="0.9" opacity="0.2"/>`}
+function zNude(pal,id,an){return`<path d="M150 238 C 116 238, 84 252, 74 302 L 62 420 L 238 420 L 226 302 C 216 252, 184 238, 150 238 Z" fill="url(#${id}skin)"/>
+<path d="M150 238 C 120 238, 96 250, 86 298 L 74 420 L 150 420 Z" fill="#fff" opacity="0.04"/>
+<ellipse cx="150" cy="241" rx="26" ry="9" fill="#000" opacity="0.1"/>`+zBust(pal,id,an)+`<ellipse cx="150" cy="332" rx="2.6" ry="3.6" fill="#000" opacity="0.17"/><path d="M74 318 q76 12 152 0" stroke="#000" stroke-width="5" opacity="0.045" fill="none"/><path d="M78 306 q72 10 144 0" stroke="#fff" stroke-width="3" opacity="0.05" fill="none"/>`+zPubes(pal,id,an)+zVulva(pal,id,an)+zAnus(pal,id,an)}
+function zUnder(outfit,pal,id,an){const s=an.bust,rx=20+s*12,ry=19+s*12,cy=279+s*6,d=26+s*7,c=pal.cloth,c2=pal.cloth2,c1=150-d,c3=150+d;let o=`<path d="M150 238 C 116 238, 84 252, 74 302 L 62 420 L 238 420 L 226 302 C 216 252, 184 238, 150 238 Z" fill="#f6e6da" opacity="0.14"/>`;o+=`<ellipse cx="${c1}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${c}"/>`;o+=`<ellipse cx="${c3}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${c}"/>`;o+=`<path d="M${c1-rx*0.8} ${cy-ry+5} Q150 ${cy+ry*0.6} ${c3+rx*0.8} ${cy-ry+5}" stroke="${c}" stroke-width="7" fill="none"/>`;o+=`<path d="M${c1-rx*0.55} ${cy-ry+8} q-8 -36 6 -48" stroke="${c}" stroke-width="5" fill="none"/>`;o+=`<path d="M${c3+rx*0.55} ${cy-ry+8} q8 -36 -6 -48" stroke="${c}" stroke-width="5" fill="none"/>`;o+=`<path d="M84 354 q66 -10 132 0 q-8 38 -26 58 h-80 q-18 -20 -26 -58 Z" fill="${c2}"/>`;o+=`<path d="M84 354 q66 8 132 0" stroke="${c}" stroke-width="3" fill="none" opacity="0.7"/>`;return o}
+function zHint(pal,id,an){const s=an.bust;if(s<0.5)return"";const k=(s-0.5)/0.5;return`<path d="M150 258 q-${4+k*8} 18 0 36" stroke="#000" stroke-width="${2+k*2.2}" opacity="${0.05+k*0.07}" fill="none" stroke-linecap="round"/>
+<ellipse cx="119" cy="288" rx="${9+k*7}" ry="${7+k*5}" fill="#fff" opacity="${0.03+k*0.05}"/>
+<ellipse cx="181" cy="288" rx="${9+k*7}" ry="${7+k*5}" fill="#fff" opacity="${0.03+k*0.05}"/>`}
+function zDraw(outfit,pal,id,g,an,ex){if(g==="m")return sa(outfit,pal,id,g);if(ex===2)return zNude(pal,id,an);if(ex===1)return zUnder(outfit,pal,id,an);return sa(outfit,pal,id,g)+zHint(pal,id,an)}
+function zZones(st){return Fa.concat(Ka[st]||Ka["初始"])}
+function zBase(c){const sd=c.seed||Math.floor(Math.random()*99999),d=_(sd),L=c.look||{};return{seed:sd,gender:c.gender==="m"?"m":"f",hair:L.hair==null?d.hair:L.hair,outfit:L.outfit==null?d.outfit:L.outfit,palette:L.palette==null?d.palette:L.palette,accessory:L.accessory==null?d.accessory:L.accessory,eyeStyle:L.eyeStyle||d.eyeStyle,expr:L.expr==null?0:L.expr,bg:L.bg==null?0:L.bg,mark:L.mark==null?-1:L.mark,hairAcc:L.hairAcc==null?-1:L.hairAcc}}
+function zNew(c,state,look){const b=zBase(c),l=look?{...b,...look}:b,an=c.anatomy||An(b.seed),ex=zEx(state);return{id:"p"+Date.now().toString(36)+ex+Math.random().toString(36).slice(2,6),label:state,url:S({...l,exposure:ex,anatomy:an}),state}}
+function zIsSvg(u){return typeof u==="string"&&u.startsWith("data:image/svg+xml")}
+function zHas(c,st){return(c.portraits||[]).some(p=>p.state===st)}
+function zSets(c){return(c.portraits||[]).filter(p=>zIsSvg(p.url))}
+async function zFill(c){c.portraits=c.portraits||[];c.anatomy=c.anatomy||An(c.seed||1);let n=0;if(!c.portraits.length||zSets(c).length===c.portraits.length){for(const st of["初始","内衣","全裸"]){if(!zHas(c,st)){c.portraits.push(zNew(c,st));n++}}}c.updatedAt=Date.now();await b("chars",c);return n}
+async function zFillAll(){const cs=await x("chars");let n=0;for(const c of cs){try{n+=await zFill(c)}catch(e){}}return n}
+async function zAi(c,idea){const b=zBase(c),an=c.anatomy||An(b.seed),spec=await U("portrait");const req=`${spec?spec+"\n\n---\n":""}角色名：${c.name||"未命名"}
+身份：${c.desc||"无"}
+性格：${c.personality||"无"}
+现有外形（必须沿用）：hair=${b.hair} palette=${b.palette} eyeStyle=${b.eyeStyle} accessory=${b.accessory}
+现有身体：bust=${an.bust.toFixed(2)} areola=${an.areola.toFixed(2)} vulva=${an.vulva.toFixed(2)} pubes=${an.pubes.toFixed(2)} depth=${an.depth.toFixed(2)}
+用户要求：${idea||"按角色设定发挥"}
+只输出 JSON，不要解释。`;const raw=await Y(req,{maxTokens:900,temperature:.9});const j=J(raw)||{};const num=(x,d)=>{const v=Number(x);return Number.isFinite(v)?v:d};const out={hair:b.hair,palette:b.palette,eyeStyle:b.eyeStyle,accessory:b.accessory,outfit:num(j.outfit,b.outfit),state:["初始","内衣","全裸"].includes(j.state)?j.state:"初始",expr:Math.max(0,Math.min(5,num(j.expr,0))),bg:Math.max(0,Math.min(5,num(j.bg,0))),mark:Math.max(-1,Math.min(2,num(j.mark,-1))),hairAcc:Math.max(-1,Math.min(2,num(j.hairAcc,-1)))};out.anatomy={bust:Math.min(1,Math.max(0,num(j.anatomy&&j.anatomy.bust,an.bust))),areola:Math.min(1,Math.max(0,num(j.anatomy&&j.anatomy.areola,an.areola))),vulva:Math.min(1,Math.max(0,num(j.anatomy&&j.anatomy.vulva,an.vulva))),pubes:Math.min(1,Math.max(0,num(j.anatomy&&j.anatomy.pubes,an.pubes))),depth:Math.min(1,Math.max(0,num(j.anatomy&&j.anatomy.depth,an.depth)))};out.reason=String(j.reason||"").slice(0,60);out.dress=String(j.dress||"").slice(0,40);return out}
+var XZ=[{key:"左乳",cx:112,cy:172,w:58,h:54,phrases:["手掌覆上{n}的左乳","捏了捏{n}左乳的乳尖","指腹压着{n}左乳的乳晕打转","把{n}的左乳托在掌心掂了掂"]},{key:"右乳",cx:188,cy:172,w:58,h:54,phrases:["手掌覆上{n}的右乳","捏了捏{n}右乳的乳尖","指腹压着{n}右乳的乳晕打转","把{n}的右乳托在掌心掂了掂"]},{key:"子宫",cx:150,cy:250,w:64,h:58,phrases:["掌心按在{n}的小腹上，那里是她的子宫","低头把耳朵贴在{n}的小腹，听着里面的动静","手指按着{n}子宫的位置慢慢压下去","亲了亲{n}的小腹，隔着皮肉吻到子宫","指尖在{n}小腹上画圈，压着子宫的轮廓"]},{key:"左卵巢",cx:110,cy:246,w:32,h:26,phrases:["指尖按在{n}左侧的卵巢位置","手掌贴着{n}的侧腹，压着左边那一颗","拇指在{n}左侧小腹上揉了揉"]},{key:"右卵巢",cx:190,cy:246,w:32,h:26,phrases:["指尖按在{n}右侧的卵巢位置","手掌贴着{n}的侧腹，压着右边那一颗","拇指在{n}右侧小腹上揉了揉"]},{key:"阴道",cx:150,cy:320,w:42,h:66,phrases:["指腹贴着{n}的阴道壁往里按","两根手指顺着{n}的阴道慢慢推进","拇指压在{n}的阴道上，感觉到里面在收缩","掌心覆着{n}的阴道口，感受着里面的热"]},{key:"阴道口",cx:150,cy:358,w:46,h:22,phrases:["指尖抵着{n}的阴道口打转","拇指分开{n}的阴唇，看着阴道口","指腹在{n}的阴道口按了按","低头用舌尖碰了碰{n}的阴道口"]},{key:"肛门",cx:150,cy:388,w:34,h:18,phrases:["指尖在{n}的肛门上打转","拇指压着{n}的肛门慢慢往里推","指腹蹭过{n}的肛口"]}];
+var zGal={};K(zGal,{mount:()=>zGalM});
+async function zGalM(t){const cs=(await x("chars")).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+t.innerHTML=`<div class="screen">
+  <div class="topbar"><a class="icon-btn" href="#/settings">‹</a><h1>立绘总览</h1><span class="small muted">${cs.length} 个角色</span></div>
+  <div class="pad"><p class="small muted" style="margin-bottom:12px">点一个角色，展开他的全部立绘；点某张就切成当前立绘。</p><div id="gal"></div></div></div>`;
+const box=t.querySelector("#gal");
+if(!cs.length){box.innerHTML=`<div class="empty"><span class="big">🖼</span>还没有角色<br><span class="small">先去猫箱或大世界建一个</span></div>`;return}
+box.innerHTML=cs.map(c=>{const ps=c.portraits||[],cur=ps[c.activePortrait||0]||ps[0],sts=[...new Set(ps.map(p=>p.state||"初始"))];
+ return `<div style="border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden;background:var(--panel)">
+   <button data-h="${c.id}" style="display:flex;gap:10px;align-items:center;width:100%;padding:10px;text-align:left">
+     ${cur?`<img src="${cur.url}" style="width:44px;height:60px;object-fit:cover;border-radius:10px;background:#0d1119;flex:none">`:`<span style="width:44px;height:60px;border-radius:10px;background:var(--panel2);flex:none"></span>`}
+     <span style="flex:1;min-width:0"><span style="display:block;font-weight:600">${d(c.name)}</span>
+     <span style="display:block;font-size:12px;color:var(--dim)">${ps.length} 张${sts.length?" · "+sts.join(" / "):""}</span></span>
+     <span style="color:var(--dim2);font-size:13px" data-arrow>▾</span></button>
+   <div data-b="${c.id}" style="display:none;padding:0 10px 10px;border-top:1px solid var(--line)">
+     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:10px">
+     ${ps.map((p,i)=>`<div style="position:relative"><button data-v="${c.id}|${i}" style="padding:0;width:100%;border:1px solid ${i===(c.activePortrait||0)?"var(--acc)":"var(--line)"};border-radius:10px;overflow:hidden;background:var(--panel2)">
+       <img src="${p.url}" style="width:100%;aspect-ratio:3/4.2;object-fit:cover;display:block">
+       <span style="display:block;font-size:10px;color:${i===(c.activePortrait||0)?"var(--acc)":"var(--dim)"};padding:3px 0 4px">${d(p.label||p.state||"立绘")}</span></button><button data-del="${c.id}|${i}" title="删除" style="position:absolute;right:3px;top:3px;width:22px;height:22px;border-radius:8px;background:rgba(0,0,0,.55);color:#ff8a8a;font-size:13px;line-height:1">×</button></div>`).join("")}
+     </div>
+     <div class="row" style="gap:8px;margin-top:8px">
+       <button class="btn sm" data-add="${c.id}">＋ 给这个角色加一张</button>
+       <button class="btn sm" data-fill="${c.id}">⚡ 补齐三档</button>
+     </div>
+   </div></div>`}).join("");
+box.querySelectorAll("[data-h]").forEach(hd=>{hd.onclick=()=>{const id=hd.dataset.h,body=box.querySelector(`[data-b="${id}"]`),ar=hd.querySelector("[data-arrow]");const open=body.style.display!=="none";body.style.display=open?"none":"block";if(ar)ar.textContent=open?"▾":"▴"}});
+box.querySelectorAll("[data-v]").forEach(btn=>{btn.onclick=async()=>{const[id,idx]=btn.dataset.v.split("|");const c=(await x("chars")).find(y=>y.id===id);if(!c)return;c.activePortrait=Number(idx);c.avatar=c.portraits[c.activePortrait].url;st(c);c.updatedAt=Date.now();await b("chars",c);f("已切换到「"+(c.portraits[c.activePortrait].label||"立绘")+"」");zGalM(document.getElementById("app"))}});
+box.querySelectorAll("[data-del]").forEach(btn=>{btn.onclick=async(e2)=>{e2.stopPropagation();const[cid,idx]=btn.dataset.del.split("|");const c=(await x("chars")).find(y=>y.id===cid);if(!c||!(c.portraits||[])[Number(idx)])return;const okv=await M("删掉这张立绘？","删除",!0);if(!okv)return;c.portraits.splice(Number(idx),1);if(c.activePortrait>=c.portraits.length)c.activePortrait=Math.max(0,c.portraits.length-1);if(c.portraits[c.activePortrait])c.avatar=c.portraits[c.activePortrait].url;c.updatedAt=Date.now();await b("chars",c);f("已删除");zGalM(document.getElementById("app"))}});
+box.querySelectorAll("[data-add]").forEach(btn=>{btn.onclick=async()=>{const c=(await x("chars")).find(y=>y.id===btn.dataset.add);if(!c)return;Ne(c,()=>zGalM(document.getElementById("app")))}});
+box.querySelectorAll("[data-fill]").forEach(btn=>{btn.onclick=async()=>{const c=(await x("chars")).find(y=>y.id===btn.dataset.fill);if(!c)return;const n2=await zFill(c);f(n2?`补了 ${n2} 张`:"三档已经齐了");zGalM(document.getElementById("app"))}})}
+function zBg(i,b){const x=[
+`<circle cx="60" cy="70" r="34" fill="${i.accent}" opacity="0.08"/><circle cx="248" cy="330" r="52" fill="${i.accent}" opacity="0.06"/>`,
+`<path d="M0 352 Q150 282 300 352 L300 420 L0 420 Z" fill="${i.accent}" opacity="0.07"/>`,
+`<circle cx="150" cy="200" r="138" fill="#fff" opacity="0.035"/><circle cx="150" cy="200" r="98" fill="${i.accent}" opacity="0.05"/>`,
+`<g opacity="0.07" fill="${i.accent}"><circle cx="46" cy="120" r="4"/><circle cx="88" cy="60" r="3"/><circle cx="236" cy="96" r="5"/><circle cx="262" cy="196" r="3"/><circle cx="40" cy="300" r="4"/><circle cx="250" cy="330" r="4"/><circle cx="196" cy="372" r="3"/></g>`,
+`<path d="M0 0 L300 0 L300 120 Q150 40 0 120 Z" fill="${i.accent}" opacity="0.07"/>`,
+`<g opacity="0.06" stroke="${i.accent}" fill="none" stroke-width="1.2"><circle cx="150" cy="210" r="60"/><circle cx="150" cy="210" r="92"/><circle cx="150" cy="210" r="124"/></g>`
+][b]||"";return x}
+function zMark(m,i,h){if(m===0)return`<circle cx="186" cy="178" r="1.9" fill="#5c3438" opacity="0.85"/>`;if(m===1)return`<circle cx="182" cy="300" r="2.2" fill="#7d4048" opacity="0.7"/>`;if(m===2)return`<g stroke="#9c6a7a" stroke-width="1.6" fill="none" opacity="0.65"><path d="M136 322 q14 -10 28 0"/><path d="M136 330 q14 10 28 0"/><circle cx="150" cy="326" r="3"/></g>`;return""}
+function zHairAcc(k,i,h,n){if(k===0)return`<path d="M96 108 q54 -26 108 0 l-4 10 q-50 -22 -100 0 Z" fill="${i.accent}" opacity="0.9"/>`;if(k===1)return`<g fill="${i.accent}" opacity="0.92"><path d="M196 108 l14 -8 l6 9 l-14 8 z"/><path d="M206 120 l12 -4 l4 8 l-12 4 z"/></g>`;if(k===2)return`<g transform="translate(104 104)"><circle r="6" fill="#e86f8f"/><circle r="3.2" fill="#ffd8e2"/><circle cx="6" cy="-4" r="4.4" fill="#e86f8f"/><circle cx="-6" cy="-3" r="4" fill="#f08fa8"/></g>`;return""}
+var zB={acts:[
+ {k:"atk",n:"普通攻击",dmg:[8,16],tag:""},
+ {k:"heavy",n:"蓄力重击",dmg:[16,28],tag:""},
+ {k:"guard",n:"防御",dmg:[0,0],tag:"防"},
+ {k:"ero1",n:"千年杀·插入阴道版",dmg:[10,18],ero:1,tag:"色"},
+ {k:"ero2",n:"背后揉胸",dmg:[6,12],ero:1,tag:"色"},
+ {k:"ero3",n:"口交突袭",dmg:[8,14],ero:1,tag:"色"},
+ {k:"ero4",n:"扯衣露乳",dmg:[4,10],ero:1,cloth:1,tag:"色"},
+ {k:"exec",n:"终结技 · 处决",dmg:[0,0],exec:1,tag:"杀"}
+],cats:[["ero","色色"],["spar","切磋"],["kill","斩杀"],["custom","自定义"]]};
+async function zBai(sys,user,max){var ctx=zBai.ctx||{},extra="";var hist="";try{hist=ctx.hist?String(ctx.hist()||""):""}catch(e){}if(hist)user="【这一场已经发生的事】\n"+hist.slice(-3000)+"\n\n【现在】\n"+user;try{var ps=zPick(zCache.prompts,ctx.pid||[]).slice(0,3).map(function(p){return String(p.body||"").slice(0,300)}).filter(Boolean);ps.length&&(extra+=ps.join("\n")+"\n\n")}catch(e){};try{var ls=zPick(zCache.lores,ctx.lid||[]).slice(0,3).map(function(l){return l.body?l.body.slice(0,300):(l.content||"").slice(0,300)}).filter(Boolean);ls.length&&(extra+="【背景资料】\n"+ls.join("\n")+"\n\n")}catch(e){};var r=await it([{role:"system",content:extra+sys},{role:"user",content:user}],{temperature:.95,maxTokens:max||520});return String(r&&r.text||"").trim()}
+function zBdmg(a){return a[0]+Math.floor(Math.random()*(a[1]-a[0]+1))}
+async function zBkill(id,on){try{var c=await A("chars",id);if(!c)return;c.dead=!!on;c.deadAt=on?Date.now():0;c.updatedAt=Date.now();await b("chars",c)}catch(e){}}
+async function zBstate(id,st){try{var c=await A("chars",id);if(!c)return;var ps=c.portraits||[];var i=ps.findIndex(function(p){return p.state===st});if(i>=0){c.activePortrait=i;c.avatar=ps[i].url;c.updatedAt=Date.now();await b("chars",c)}}catch(e){}}
+function Vt(opt){opt=opt||{};
+var world=opt.world||null;
+var meName=opt.meName||(q().userName||"你"),team=[{name:meName,isMe:true,hp:100,max:100}].concat(((opt.team&&opt.team.length)?opt.team:(opt.player?[opt.player]:[])).map(function(c){return Object.assign({},c,{hp:100,max:100})}));
+var foes=(opt.foes&&opt.foes.length?opt.foes:(opt.enemy?[opt.enemy]:[{name:"对手"}])).map(function(c){return Object.assign({},c,{hp:100,max:100,ero:0,cloth:2})});
+var phase="intro",intro="",log=[],busy=false,chatId=opt.chatId||"",idea="",pendingCat="",sceneOpts=[],result="",ti=0;
+zBai.ctx={pid:(world&&world.promptIds)||[],lid:(world&&world.loreIds)||[],hist:function(){return log.map(function(x){return x[0]==="旁"?x[1]:x[0]+"："+x[1]}).join("\n")}};var root=document.createElement("div");root.className="battle";document.body.appendChild(root);
+function E(s){return root.querySelector(s)}
+function esc(x){return d(x)}
+function push(who,txt){log.push([who,txt]);}
+function bar(v,m,cls){return '<div class="hp '+cls+'"><i style="width:'+Math.max(0,v/m*100)+'%"></i></div>'}
+function head(){return '<div class="row"><span class="small muted">'+esc(world?world.name+" · 对战":"对战")+'</span><span style="flex:1"></span><button class="btn sm ghost" data-x>退出</button></div>'}
+function teamHTML(){return '<div class="fighters">'+team.map(function(c){return '<div class="fighter">'+(c.avatar?'<img class="pic" src="'+c.avatar+'">':'<div class="pic" style="display:flex;align-items:center;justify-content:center;color:#8fa3c8;font-size:22px">我</div>')+'<b>'+esc(c.name)+'</b>'+bar(c.hp,c.max,"")+'</div>'}).join("")+'<div style="width:10px"></div>'+foes.map(function(c,i){return '<div class="fighter" data-tgt="'+i+'" style="cursor:pointer;'+(i===ti?'outline:2px solid #7fd1ff;outline-offset:2px;border-radius:12px':'')+'">'+(c.avatar?'<img class="pic" src="'+c.avatar+'">':'<div class="pic"></div>')+'<b>'+esc(c.name)+'</b>'+bar(c.hp,c.max,"ai")+'</div>'}).join("")+'</div>'}
+function logHTML(){return '<div class="battle-log" id="blog">'+log.map(function(x){return '<p><b style="color:'+(x[0]==="我"?"#7fd1ff":x[0]==="敌"?"#ff9a9a":"#c9b6ff")+'">'+esc(x[0]==="旁"?"":x[0]+"：")+'</b>'+esc(x[1])+'</p>'}).join("")+'</div>'}
+function render(){
+ if(phase==="intro"){
+  root.innerHTML=head()+'<div class="pad" style="overflow-y:auto;flex:1"><h3 style="margin:8px 0 10px">对战前</h3>'+
+   '<div class="field"><label>为什么打起来（可以留空让 AI 编）</label><textarea class="textarea" id="idea" rows="3" placeholder="例如：她抢了你最后一瓶酒">'+esc(idea)+'</textarea></div>'+
+   (intro?'<div class="battle-log" style="margin:8px 0"><p>'+esc(intro)+'</p></div>':'')+
+   '<div class="row wrap" style="gap:8px;margin-top:10px">'+
+    '<button class="btn" data-gen>'+(busy?"生成中…":"✨ 让 AI 写开场")+'</button>'+
+    '<button class="btn" data-use '+(idea.trim()?"":"disabled")+'>就用我写的</button>'+
+    '<button class="btn primary" data-go '+(intro?"":"disabled")+'>开始对战</button>'+
+   '</div>'+
+   '<p class="small muted" style="margin-top:12px">对手：'+esc(foes.map(function(c){return c.name}).join("、"))+'</p>'+
+  '</div>';
+ } else if(phase==="fight"){
+  root.innerHTML=head()+teamHTML()+logHTML()+
+   '<div class="battle-actions">'+zB.acts.map(function(a){return '<button class="btn'+(a.tag==="杀"?" danger":"")+'" data-act="'+a.k+'" '+(busy?"disabled":"")+'>'+esc(a.n)+'</button>'}).join("")+'</div>'+
+   '<div class="row" style="gap:8px;margin-top:8px"><input class="input" id="free" placeholder="自定义这一下怎么打…"><button class="btn" data-free '+(busy?"disabled":"")+'>出手</button></div>';
+ } else {
+  root.innerHTML=head()+'<div class="pad" style="overflow-y:auto;flex:1">'+
+   '<h3 style="margin:6px 0 10px">'+(result==="lose"?"你被制服了":"战斗结束 · 处置")+'</h3>'+
+   (result==="lose"?
+     '<p class="small muted" style="margin-bottom:10px">对方把你摁在地上，接下来由她们决定。</p><button class="btn primary" data-dom>让 AI 写这一段</button>'
+    :
+     (sceneOpts.length?
+       '<p class="small muted" style="margin-bottom:8px">选一个处置方式：</p><div class="list" style="padding:0">'+sceneOpts.map(function(s,i){return '<button class="list-item" data-opt="'+i+'"><span class="grow">'+esc(s)+'</span></button>'}).join("")+'</div><button class="btn sm ghost" data-back style="margin-top:10px">换一类</button>'
+      :
+       '<p class="small muted" style="margin-bottom:8px">对手已经倒下。想怎么处置？</p><div class="row wrap" style="gap:8px">'+zB.cats.map(function(c){return '<button class="btn" data-cat="'+c[0]+'">'+esc(c[1])+'</button>'}).join("")+'</div>')
+   )+
+   (log.length?'<div style="margin-top:12px">'+logHTML()+'</div>':'')+
+   (busy?'<p class="small muted" style="margin-top:12px">AI 正在写…</p>':'')+
+   '</div>';
+ }
+ var x=root.querySelector("[data-x]");if(x)x.onclick=function(){root.remove()};
+ if(phase==="intro"){
+  var ta=root.querySelector("#idea");if(ta)ta.oninput=function(){idea=ta.value};
+  var g=root.querySelector("[data-gen]");if(g)g.onclick=function(){genIntro()};
+  var us=root.querySelector("[data-use]");if(us)us.onclick=function(){if(!idea.trim())return;intro=idea;render()};
+  var go=root.querySelector("[data-go]");if(go)go.onclick=function(){if(!String(intro).trim()){f("先写或生成一段开场");return}phase="fight";push("旁",intro);render()};
+ }
+ if(phase==="fight"){
+  root.querySelectorAll("[data-tgt]").forEach(function(tg){tg.onclick=function(){ti=Number(tg.dataset.tgt);render()}});
+  root.querySelectorAll("[data-act]").forEach(function(btn){btn.onclick=function(){doAct(btn.dataset.act)}});
+  var fr=root.querySelector("[data-free]");if(fr)fr.onclick=function(){var v=root.querySelector("#free").value.trim();if(!v)return;doAct("free",v)};
+  var bl=root.querySelector("#blog");if(bl)bl.scrollTop=1e6;
+ }
+ if(phase==="end"){
+  root.querySelectorAll("[data-cat]").forEach(function(btn){btn.onclick=function(){genScenes(btn.dataset.cat)}});
+  root.querySelectorAll("[data-opt]").forEach(function(btn){btn.onclick=function(){finish(sceneOpts[Number(btn.dataset.opt)])}});
+  var bk=root.querySelector("[data-back]");if(bk)bk.onclick=function(){sceneOpts=[];render()};
+  var dm=root.querySelector("[data-dom]");if(dm)dm.onclick=function(){genDom()};
+ }
+}
+function alive(list){return list.filter(function(c){return c.hp>0})}
+function roster(){return "【当前状态】\n我方："+team.map(function(c){return c.name+(c.hp<=0?"（倒下）":"（剩 "+Math.round(c.hp/c.max*100)+"%）")}).join("、")+"\n对手："+foes.map(function(c){return c.name+(c.hp<=0?"（已倒下，不再有动作和台词）":"（剩 "+Math.round(c.hp/c.max*100)+"%）")}).join("、")}
+async function genIntro(){
+ if(busy)return;busy=true;render();
+ var who="我方："+team.map(function(c){return c.name+(c.desc?"（"+String(c.desc).slice(0,40)+"）":"")}).join("、");
+ var foe="对手："+foes.map(function(c){return c.name+(c.desc?"（"+String(c.desc).slice(0,40)+"）":"")}).join("、");
+ var p=(world?"世界："+world.name+"。"+String(world.prompt||"").slice(0,300)+"\n":"")+who+"\n"+foe+"\n"+(idea?"玩家给的理由："+idea:"请自己设计一个合理的对战理由。")+"\n写 150～250 字，交代冲突怎么起的，最后一个动作让战斗开始。只输出正文，不要标题。";
+ try{intro=await zBai("你是中文战斗叙事者，文风冷硬、画面感强，只输出正文。",p,600)}catch(e){intro="（开场生成失败："+(e.message||e)+"）"}
+ busy=false;render();
+}
+async function doAct(k,free){
+ if(busy)return;
+ var tgt=foes[ti];if(!tgt||tgt.hp<=0){ti=foes.findIndex(function(f){return f.hp>0});tgt=foes[ti]}if(!tgt)return;
+ if(k==="exec"&&tgt.hp>tgt.max*.35){f("对手还有 "+Math.round(tgt.hp/tgt.max*100)+"%，打到三成以下才能处决");return}
+ var a=zB.acts.find(function(x){return x.k===k})||{k:k,n:free||"自定义攻击",dmg:[10,22]};
+ if(k==="exec"){busy=true;push("我","（处决发动）");await execFlow(tgt);busy=false;checkEnd();render();return}
+ if(k==="guard"){busy=true;push("我",team[0].name+" 稳住架势");
+  var back=zBdmg([3,7]);team[0].hp=Math.max(0,team[0].hp-Math.max(1,Math.floor(back/2)));
+  push("敌",tgt.name+" 抢攻，"+team[0].name+" 硬吃 "+Math.max(1,Math.floor(back/2))+" 点");
+  busy=false;checkEnd();render();return}
+ var dmgv=zBdmg(a.dmg);
+ busy=true;
+ var others=alive(foes).filter(function(f){return f!==tgt}).map(function(f){return f.name});
+var mates=team.filter(function(c){return !c.isMe&&c.hp>0});
+var p="我方："+team[0].name+"（玩家本人）"+(mates.length?"，队友："+mates.map(function(c){return c.name}).join("、"):"")+"\n"+
+ "对手："+alive(foes).map(function(f){return f.name+(f===tgt?"（这一下的目标）":"（在旁边）")}).join("、")+"\n"+
+ "玩家这一下："+(free?("\""+free+"\""):a.n)+"\n"+
+ "目标剩余体力："+Math.round(tgt.hp/tgt.max*100)+"%。\n"+
+ "只输出 JSON，不要代码块：{\"mine\":\"玩家这一下打出去的过程和结果，60～120 字\",\"ally\":\"队友这一回合怎么配合，40～80 字；没有队友就空字符串\",\"theirs\":\"对方还手，50～100 字\"}\n"+
+ "要求：mine 一定是玩家打对方；theirs 一定是对方还手；如果场上有多个对手，在 mine 或 theirs 里用一句话交代旁边那个人的反应（她可能闪开、可能趁机偷袭）。不要写反。";
+ try{var txt=await zBai("你是中文战斗叙事者，动作具体、有声响和触感。只输出 JSON。",p,560);
+  var oj=J(txt)||{};
+  if(oj.mine){push("我",String(oj.mine));if(oj.ally&&String(oj.ally).trim())push("队友",String(oj.ally));if(oj.theirs)push("敌",String(oj.theirs))}
+  else{var parts=String(txt).split(/\n\s*---\s*\n/);push("我",parts[0]||txt);if(parts[1])push("敌",parts[1])}
+ }catch(e){push("我","（AI 没写成："+(e.message||e)+"）")}
+ tgt.hp=Math.max(0,tgt.hp-dmgv);
+ if(mates&&mates.length){var mt=mates[Math.floor(Math.random()*mates.length)],tv=alive(foes);if(tv.length){var tf=tv[Math.floor(Math.random()*tv.length)],td=zBdmg([5,13]);tf.hp=Math.max(0,tf.hp-td);push("旁","（"+mt.name+" 支援，"+tf.name+" -"+td+" HP）")}}
+ if(a.ero){tgt.ero=Math.min(100,(tgt.ero||0)+18)}
+ if(a.cloth){tgt.cloth=Math.max(0,(tgt.cloth||1)-1);zBstate(tgt.id,tgt.cloth<1?"内衣":"初始")}
+ var bd=zBdmg([6,14]);team[0].hp=Math.max(0,team[0].hp-bd);
+ push("旁","（"+tgt.name+" -"+dmgv+" HP，"+team[0].name+" -"+bd+" HP）");
+ busy=false;checkEnd();render();
+}
+async function execFlow(tgt){
+ push("旁","处决时刻。");
+ var list=["斩首","腰斩","贯穿心脏","扭断脖子","剖腹","碾碎头颅","放血","自己写"];
+ var pick=await new Promise(function(res){
+  var box=document.createElement("div");box.className="overlay";
+  box.innerHTML='<div class="sheet"><h3>选一种处决</h3><div class="list" style="padding:0">'+list.map(function(s,i){return '<button class="list-item" data-e="'+i+'"><span class="grow">'+s+'</span></button>'}).join("")+'</div><div class="foot"><button class="btn ghost" data-c>取消</button></div></div>';
+  document.body.appendChild(box);
+  box.querySelector("[data-c]").onclick=function(){box.remove();res(null)};
+  box.querySelectorAll("[data-e]").forEach(function(b){b.onclick=function(){var v=list[Number(b.dataset.e)];if(v==="自己写"){var t2=window.prompt("写一种处决方式","例如：从肩胛骨劈开");if(!t2){return}v=t2}box.remove();res(v)}});
+ });
+ if(!pick)return;
+ var p="我方："+team[0].name+"\n对手："+tgt.name+"（已倒地，无力反抗）\n处决方式："+pick+"\n写 150～250 字，只写处决这一下，血腥直接，不要回避。只输出正文。";
+ try{var txt=await zBai("你是中文战斗叙事者，写血腥场面不留情面，只输出正文。",p,600);push("我",txt)}catch(e){push("我","（处决生成失败）")}
+ tgt.hp=0;
+ await zBstate(tgt.id,"全裸");
+}
+function checkEnd(){
+ if(!alive(foes).length){phase="end";result="win";sceneOpts=[];render();return}
+ if(!alive(team).length){phase="end";result="lose";render();return}
+ render();
+}
+async function genScenes(cat){
+ if(busy)return;busy=true;pendingCat=cat;render();
+ var cname=(zB.cats.find(function(c){return c[0]===cat})||["","自定义"])[1];
+ var p=roster()+"\n对手已被制服。处置类别："+cname+"\n"+
+  (cat==="ero"?"写 3 个具体的色色处置场景，每个 12～24 字，直白色情，例如「按在地上从后面进入」":cat==="spar"?"写 3 个具体的切磋收尾场景，重点是衣服被打烂、露出身体，每个 12～24 字":cat==="kill"?"写 3 个具体的处决场景，例如「一刀斩首」":cat==="custom"?"写 3 个出人意料的处置场景，每个 12～24 字":"")+
+  "\n只输出 JSON 数组：[\"…\",\"…\",\"…\"]";
+ try{var txt=await zBai("你只输出 JSON 数组，不要解释。",p,400);
+  var m=String(txt).match(/\[[\s\S]*\]/);
+  var arr=m?JSON.parse(m[0]):[];
+  sceneOpts=arr.filter(function(x){return typeof x==="string"}).slice(0,3);
+  if(!sceneOpts.length)sceneOpts=["（AI 没给出方案，换一类试试）"];
+ }catch(e){sceneOpts=["（生成失败："+(e.message||e)+"）"]}
+ busy=false;render();
+}
+async function finish(scene){
+ if(busy)return;busy=true;render();
+ var p=roster()+"\n处置方式："+scene+"\n只写这一段处置。已经倒下的角色不能再站起来、不能说话、不能调侃。写 200～320 字，具体、有画面，不要跳过。只输出正文。";
+ try{var txt=await zBai("你是中文叙事者，写露骨和血腥场面都不回避，只输出正文。",p,700);
+  push("旁","【处置】"+scene);push("我",txt);
+  var target=foes[0];
+  if(pendingCat==="kill")await zBkill(target.id,true);
+  await zBstate(target.id,pendingCat==="kill"?"初始":"全裸");
+  await commitBattle();
+ }catch(e){push("我","（生成失败："+(e.message||e)+"）")}
+ busy=false;render();
+}
+async function genDom(){
+ if(busy)return;busy=true;render();
+ var liv=alive(foes),who=liv.length?liv.map(function(c){return c.name}).join("、"):"对手";
+var p=roster()+"\n我方 "+team[0].name+" 被 "+who+" 制服。\n只写这一段：还站着的对手骑上来，占据上位，从她的视角推进。已经倒下的角色不能再出现动作或台词。写 200～320 字，只输出正文。";
+ try{var txt=await zBai("你是中文叙事者，写露骨场面不回避，只输出正文。",p,700);
+  push("旁","【被制服】");push("敌",txt);
+  await zBstate(foes[0].id,"全裸");
+  await commitBattle();
+ }catch(e){push("敌","（生成失败："+(e.message||e)+"）")}
+ busy=false;render();
+}
+async function commitBattle(){
+ try{
+  var cid=chatId;
+  if(!cid){
+   var ch={id:j("ch_"),mode:"scene",cast:team.concat(foes).map(ca),title:(world?world.name+" · ":"")+"对战",worldId:world?world.id:"",worldName:world?world.name:"",worldPrompt:world?world.prompt:"",lore:[],choices:!1,createdAt:Date.now(),updatedAt:Date.now()};
+   await b("chats",ch);cid=ch.id;chatId=cid;
+  }
+  var text=log.map(function(x){return x[0]==="旁"?x[1]:x[0]+"："+x[1]}).join("\n");
+  if(pendingCat==="kill"&&foes[0])text+="\n\n【状态】"+foes[0].name+" 已被杀死，不会再说话、不会再有动作。";
+  if(result==="lose")text+="\n\n【状态】"+team[0].name+" 被制服。";
+  await ht(cid,"assistant",text);
+  f("这段剧情已写进对话记录，回世界页刷新就能看到");
+ }catch(e){console.warn("写入剧情失败",e)}
+}
+render();
+}
+async function zBgenChar(world,cb){
+ var idea=await at("让 AI 生成一个角色","","例如：嘴硬心软的剑客；留空就按世界设定来",!0);
+ if(idea==null)return;
+ f("AI 正在写角色…",3e4);
+ try{
+  var spec=await U("char");
+  var want=String(idea||"").trim();var p=(spec?spec+"\n\n":"")+"【这一条最重要】玩家点名要的角色："+(want||"（没点名，你按世界设定自己设计一个）")+"\n如果上面是一个具体的名字（人名、称号、角色名），name 字段必须一字不差就用这个，不许换成别的角色。\n\n世界："+world.name+"。\n"+String(world.prompt||"").slice(0,700)+"\n\n只输出 JSON，不要代码块：{\"name\":\"名字\",\"gender\":\"f或m\",\"desc\":\"身份与背景，80字以内\",\"personality\":\"性格与说话方式，60字以内\",\"scenario\":\"初次见面场景，40字以内\",\"greeting\":\"开场白\"}";
+  var txt=await Y(p,{maxTokens:800,temperature:.6});
+  var o=J(txt);
+  if(!o.name){f("AI 没给出角色名，再试一次");return}
+  if(want&&want.length<=8&&!/生成|写|帮我|一个|角色|设计/.test(want)&&/^[\u4e00-\u9fa5A-Za-z·]{2,8}$/.test(want)&&!String(o.name).includes(want)){o.name=want}
+  var seed=Math.floor(Math.random()*99999);
+  var g=o.gender==="m"?"m":"f";
+  var look=Object.assign({},_(seed),{gender:g});
+  var c=G({name:String(o.name).slice(0,24),gender:g,seed:seed,look:look,avatar:S(Object.assign({},look,{seed:seed})),desc:o.desc||"",personality:o.personality||"",scenario:o.scenario||"",greeting:o.greeting||"",worldId:world.id,source:"manual",tags:["AI 生成"]});
+  await b("chars",c);
+  f("已加入："+c.name,2800);
+  cb&&cb();
+ }catch(e){console.error(e);f(e.message||"生成失败",4e3)}
+}
+async function zBappend(w,cb){
+ var add=await at("追加世界设定","","新设定会接在原有设定后面，不会覆盖",!0);
+ if(add==null||!String(add).trim())return;
+ w.prompt=(w.prompt||"")+"\n\n"+String(add).trim();
+ w.updatedAt=Date.now();
+ await b("worlds",w);
+ f("已追加设定");
+ cb&&cb();
+}
+function zBpick(chars,world){
+ if(!chars.length)return f("先点选要出场的角色");
+ var picks={};
+ chars.forEach(function(c,i){picks[c.id]=i===0?"team":"foe"});
+ var box=document.createElement("div");box.className="overlay";document.body.appendChild(box);
+ function draw(){
+  box.innerHTML='<div class="sheet"><h3>排兵布阵</h3><p class="small muted" style="margin-bottom:10px">点一下切换：队友（你这边的）/ 对手</p>'+
+   '<div class="list" style="padding:0">'+chars.map(function(c){
+    var k=picks[c.id];
+    return '<button class="list-item" data-p="'+c.id+'">'+(c.avatar?'<img src="'+c.avatar+'" style="width:34px;height:44px;border-radius:8px;object-fit:cover;flex:none">':'')+'<span class="grow">'+d(c.name)+'</span><span class="chip" style="'+(k==="team"?'background:rgba(109,140,255,.25);color:#cfe0ff':'')+'">'+(k==="team"?"队友":"对手")+'</span></button>'
+   }).join("")+'</div>'+
+   '<div class="field" style="margin-top:12px"><label>开场前已经发生的事（可选）</label><textarea class="textarea" id="pre" rows="2" placeholder="留空就让 AI 自己编"></textarea></div>'+
+   '<div class="foot"><button class="btn ghost" data-c>取消</button><button class="btn primary" data-ok>开战</button></div></div>';
+  box.querySelector("[data-c]").onclick=function(){box.remove()};
+  box.querySelectorAll("[data-p]").forEach(function(b){b.onclick=function(){var id=b.dataset.p;picks[id]=picks[id]==="team"?"foe":"team";draw()}});
+  box.querySelector("[data-ok]").onclick=function(){
+   var team=chars.filter(function(c){return picks[c.id]==="team"});
+   var foes=chars.filter(function(c){return picks[c.id]!=="team"});
+   // 允许队友为空：玩家一个人单挑
+   if(!foes.length)foes=[{name:"无名路人",avatar:"",seed:7}];
+   var pre=(box.querySelector("#pre")||{}).value||"";
+   box.remove();
+   Vt({team:team,foes:foes,world:world,idea:pre,meName:q().userName||"你"});
+  };
+ }
+ draw();
+}
+var zCache={prompts:[],lores:[]};
+async function zLoadLibs(){try{var ls=await x("libs");zCache.prompts=ls.filter(function(l){return l.type==="prompt"}).map(function(l){return{id:l.id,name:l.name,body:l.body||"",off:!!l.off||/选项式推进/.test(l.name||"")}});zCache.lores=ls.filter(function(l){return l.type==="lore"}).map(function(l){return{id:l.id,name:l.name,keys:l.keys||[],body:l.body||""}})}catch(e){}}
+function zPick(list,ids){if(!ids||!ids.length)return list.filter(function(x){return !x.off});var m={};ids.forEach(function(i){m[i]=1});return list.filter(function(x){return m[x.id]})}
+async function zPickDialog(obj,cb){
+ await zLoadLibs();
+ var pid=(obj.promptIds||[]).slice(),lid=(obj.loreIds||[]).slice();
+ var box=document.createElement("div");box.className="overlay";document.body.appendChild(box);
+ function row(kind,list,sel){return list.length?list.map(function(x){var on=!sel.length||sel.indexOf(x.id)>=0;
+  return '<button class="list-item" data-k="'+kind+'" data-i="'+x.id+'"><span class="grow">'+d(x.name||x.body||"未命名")+'</span><span class="chip" style="'+(on?"background:rgba(109,140,255,.25);color:#cfe0ff":"")+'">'+(on?"用":"不用")+'</span></button>'}).join(""):'<p class="small muted" style="padding:8px 2px">还没有</p>'}
+ function draw(){
+  box.innerHTML='<div class="sheet"><h3>用哪些资料</h3><p class="small muted" style="margin-bottom:10px">一个都不勾 = 全部都用。勾了就只用勾上的。</p>'+
+   '<div class="section-title" style="padding:0 0 6px">提示词</div><div class="list" style="padding:0">'+row("p",zCache.prompts,pid)+'</div>'+
+   '<div class="section-title" style="padding:12px 0 6px">世界书</div><div class="list" style="padding:0">'+row("l",zCache.lores,lid)+'</div>'+
+   '<div class="foot"><button class="btn ghost" data-c>取消</button><button class="btn ghost" data-all>全部</button><button class="btn primary" data-ok>保存</button></div></div>';
+  box.querySelector("[data-c]").onclick=function(){box.remove()};
+  box.querySelector("[data-all]").onclick=function(){pid=[];lid=[];draw()};
+  box.querySelectorAll("[data-k]").forEach(function(b){b.onclick=function(){
+   var k=b.dataset.k,id=b.dataset.i,arr=k==="p"?pid:lid;
+   var cur=arr.length===0?zCache[k==="p"?"prompts":"lores"].map(function(x){return x.id}):arr.slice();
+   var at2=cur.indexOf(id);at2>=0?cur.splice(at2,1):cur.push(id);
+   if(cur.length===0){arr.length=0}else{arr.length=0;cur.forEach(function(v){arr.push(v)})}
+   draw();
+  }});
+  box.querySelector("[data-ok]").onclick=function(){
+   obj.promptIds=pid.slice();obj.loreIds=lid.slice();
+   box.remove();f("已保存");cb&&cb();
+  };
+ }
+ draw();
+}
+async function zSuggest(chat,fill){
+ try{
+  var msgs=await L(chat.id);
+  var hist=msgs.slice(-10).map(function(m){return (m.role==="user"?"我：":"对方：")+String(m.content||"").slice(0,200)}).join("\n");
+  if(!hist)return f("还没有对话");
+  f("AI 正在想…",2e4);
+  var p="下面是这段对话最近的几句：\n"+hist+"\n\n请写 3 条「我」接下来可能说的话或做的动作，符合当前气氛和我的身份，每条 15～40 字。只输出 JSON 数组：[\"…\",\"…\",\"…\"]";
+  var txt=await Y(p,{maxTokens:320,temperature:.95});
+  var m=String(txt).match(/\[[\s\S]*\]/),arr=[];
+  try{arr=m?JSON.parse(m[0]):[]}catch(e){arr=[]}
+  arr=arr.filter(function(x){return typeof x==="string"&&x.trim()}).slice(0,3);
+  if(!arr.length){f("AI 没给出建议，再试一次");return}
+  var box=document.createElement("div");box.className="overlay";
+  box.innerHTML='<div class="sheet"><h3>可以这样说</h3><div class="list" style="padding:0">'+arr.map(function(s,i){return '<button class="list-item" data-s="'+i+'"><span class="grow">'+d(s)+'</span></button>'}).join("")+'</div><div class="foot"><button class="btn ghost" data-c>取消</button></div></div>';
+  document.body.appendChild(box);
+  box.querySelector("[data-c]").onclick=function(){box.remove()};
+  box.querySelectorAll("[data-s]").forEach(function(b){b.onclick=function(){box.remove();fill(arr[Number(b.dataset.s)])}});
+ }catch(e){f(e.message||"生成失败",4e3)}
+}
+var Fa=[{key:"头发",cx:150,cy:96,w:98,h:40,phrases:["伸手揉了揉{n}的头发","指尖拨了拨{n}的刘海","把{n}额前的一缕碎发别到耳后","轻轻抓了抓{n}的发顶","用指背蹭了蹭{n}的发梢","替{n}理了理被风吹乱的头发","用手背顺了顺{n}的鬓角","把{n}的头发拢到一边"]},{key:"额头",cx:150,cy:121,w:60,h:12,phrases:["用指节碰了碰{n}的额头","伸手探了探{n}额头的温度","轻轻弹了一下{n}的额头","把{n}的刘海往上拨了拨","指尖点了点{n}的眉心","低头用额头贴了贴{n}的额头","指尖在{n}的眉心按了按"]},{key:"左脸",cx:110,cy:176,w:28,h:20,phrases:["轻轻捏了捏{n}的左脸","用指腹蹭了蹭{n}的左脸颊","戳了戳{n}的左脸","捧住{n}的左脸","手掌贴在{n}的左脸上","弹了一下{n}的左脸颊","手指沿着{n}左脸的轮廓滑下去"]},{key:"右脸",cx:190,cy:176,w:28,h:20,phrases:["轻轻捏了捏{n}的右脸","用指腹蹭了蹭{n}的右脸颊","戳了戳{n}的右脸","捧住{n}的右脸","手掌贴在{n}的右脸上","弹了一下{n}的右脸颊","手指沿着{n}右脸的轮廓滑下去"]},{key:"下巴",cx:150,cy:204,w:42,h:12,phrases:["抬了抬{n}的下巴","用指尖勾了勾{n}的下巴","轻轻托住{n}的下巴","点了点{n}的下巴","捏住{n}的下巴看了看","拇指蹭了蹭{n}的下唇下方","食指抬起{n}的下颌看进眼里"]},{key:"脖子",cx:150,cy:226,w:30,h:28,phrases:["碰了碰{n}的脖子","指尖从{n}的颈侧划过去","轻轻捏了捏{n}的后颈","用指背蹭了蹭{n}的脖颈","把手贴在{n}的颈侧试了试温度","低头在{n}的颈边吹了口气","指腹顺着{n}的颈线往下滑"]},{key:"左肩",cx:82,cy:276,w:56,h:40,phrases:["把手搭在{n}的左肩上","轻轻拍了拍{n}的左肩","从侧后方按住{n}的左肩","捏了捏{n}的左肩","靠过去，肩膀碰上{n}的左肩","绕到左边，手落在{n}的左肩","十指按进{n}左肩的肌肉里"]},{key:"右肩",cx:218,cy:276,w:56,h:40,phrases:["把手搭在{n}的右肩上","轻轻拍了拍{n}的右肩","从侧后方按住{n}的右肩","捏了捏{n}的右肩","靠过去，肩膀碰上{n}的右肩","绕到右边，手落在{n}的右肩","十指按进{n}右肩的肌肉里"]}],
+Ka={"初始":[{key:"衣领",cx:150,cy:270,w:56,h:34,phrases:["帮{n}整了整衣领","拉了拉{n}的领口","把{n}歪掉的领子扶正","指尖碰了碰{n}的领口","低头替{n}理了理衣领","把{n}的领口往下按了按","手掌覆在{n}的领口上方"]},{key:"衣角",cx:150,cy:356,w:108,h:58,phrases:["拉了拉{n}的衣角","捏着{n}的衣角","把{n}的衣角抚平","拽了拽{n}的衣摆","低头看了看{n}的衣角","把{n}的衣角卷了一小截","手从{n}的衣摆下方探进去"]},{key:"胸口",cx:150,cy:288,w:74,h:44,phrases:["隔着衣服按了按{n}的胸口","手掌覆在{n}胸口，摸到衣料下的分量","手指顺着{n}的衣襟往下，停在胸口的弧度上","隔着衣服捏了捏{n}的乳肉","从侧面搂住{n}，手臂压在她胸前","低头看了一眼{n}被衣服撑起的胸口","拇指隔着布料从{n}的乳沟里压下去"]},{key:"腰侧",cx:112,cy:332,w:30,h:44,phrases:["手贴上{n}的腰侧","从背后环住{n}的腰","指尖沿着{n}的腰线往下按","圈住{n}的腰","手掌在{n}的腰侧停了一会儿","捏了捏{n}腰侧的软肉"]},{key:"手臂",cx:62,cy:330,w:30,h:60,phrases:["握住{n}的手臂","从手臂一路扶到{n}的手腕","拇指按在{n}的手臂内侧","把{n}的手臂拉过来","指尖沿着{n}的手臂滑下去","轻轻捏了捏{n}的上臂"]}],
+"内衣":[{key:"胸口",cx:150,cy:290,w:82,h:52,phrases:["指尖挑开{n}胸罩的边缘","隔着薄薄的罩杯捏了捏{n}的乳","手掌整个覆上{n}露出来的胸","拇指从{n}的乳沟里压下去","低头亲了一下{n}罩杯上缘的皮肤","手指勾住{n}的肩带往下拉","把{n}的胸罩往上推，让乳肉溢出来"]},{key:"乳沟",cx:150,cy:286,w:28,h:36,phrases:["指尖顺着{n}的乳沟往下滑","把{n}的两团乳肉往中间挤","低头把鼻尖埋进{n}的乳沟","用舌尖舔了舔{n}乳沟里的薄汗","拇指压在{n}的乳沟底端打转"]},{key:"左罩杯",cx:118,cy:290,w:52,h:50,phrases:["托了托{n}左边的罩杯","指腹隔着罩杯揉了揉{n}的左乳","把{n}左罩杯的边缘往下掀","低头隔着布料含住{n}左边的乳尖"]},{key:"右罩杯",cx:182,cy:290,w:52,h:50,phrases:["托了托{n}右边的罩杯","指腹隔着罩杯揉了揉{n}的右乳","把{n}右罩杯的边缘往下掀","低头隔着布料含住{n}右边的乳尖"]},{key:"腰侧",cx:112,cy:340,w:30,h:40,phrases:["手顺着{n}的腰侧往上摸","指尖勾了勾{n}内裤的边","手掌贴在{n}光裸的腰侧","从背后握住{n}的腰往自己身上带"]},{key:"大腿",cx:120,cy:392,w:62,h:40,phrases:["手掌贴着{n}的大腿内侧","把{n}的腿往外分开一点","指尖沿着{n}的大腿根往上走","拇指在{n}的大腿内侧按了按"]},{key:"内裤",cx:150,cy:386,w:92,h:44,phrases:["手指勾住{n}内裤的边往下拉","隔着内裤按了按{n}的阴部","指腹贴着{n}内裤的布料来回蹭","把{n}的内裤拉到一边","掌心覆在{n}内裤上，感觉到布料有点湿"]}],
+"全裸":[{key:"左乳",cx:118,cy:292,w:54,h:52,phrases:["握住{n}的左乳","低头含住{n}的左乳","指尖拨弄{n}左乳的乳头","把{n}的左乳往中间推","用掌心碾过{n}左乳的乳尖","托起{n}的左乳掂了掂","舌尖绕着{n}左乳的乳晕打转"]},{key:"右乳",cx:182,cy:292,w:54,h:52,phrases:["握住{n}的右乳","低头含住{n}的右乳","指尖拨弄{n}右乳的乳头","把{n}的右乳往中间推","用掌心碾过{n}右乳的乳尖","托起{n}的右乳掂了掂","舌尖绕着{n}右乳的乳晕打转"]},{key:"乳沟",cx:150,cy:288,w:26,h:38,phrases:["指尖顺着{n}的乳沟往下滑","把{n}的两团乳肉往中间挤","低头把鼻尖埋进{n}的乳沟","用舌头舔过{n}乳沟里的薄汗","拇指压在{n}的乳沟底端打转"]},{key:"肚脐",cx:150,cy:336,w:26,h:22,phrases:["指尖沿着{n}的肚脐画圈","低头亲了一下{n}的肚脐","指腹压在{n}的肚脐上按了按","顺着{n}的腰腹往下摸到肚脐"]},{key:"阴部",cx:150,cy:384,w:50,h:38,phrases:["手掌覆上{n}的阴部","指尖顺着{n}的阴唇揉过去","把{n}的腿再分开一点，看着她的阴部","两根手指并拢，滑进{n}的阴道口","拇指分开{n}的大阴唇","掌心贴着{n}的阴阜往上推","指腹压住{n}的阴蒂揉了两下","用指尖轻轻拨{n}的阴蒂","低头用舌尖碰了碰{n}的阴蒂"]},{key:"肛门",cx:150,cy:412,w:26,h:14,phrases:["指尖在{n}的肛门上打转","抹了点东西，按在{n}的肛门上","拇指压着{n}的肛门慢慢往里推","把{n}的臀肉掰开，看着她的肛门","指尖沾着湿意，蹭过{n}的肛口"]},{key:"大腿",cx:104,cy:396,w:38,h:32,phrases:["手掌贴着{n}的大腿内侧","把{n}的腿抬起来","指尖沿着{n}的大腿根往里走","拇指在{n}大腿内侧的软肉上按了按"]}]},Pe=new Map;function Za(t){for(let a=t.length-1;a>0;a--){let e=Math.floor(Math.random()*(a+1));[t[a],t[e]]=[t[e],t[a]]}return t}function Va(t,a){let e=Pe.get(t.key);e||(e={pool:[],last:-1},Pe.set(t.key,e)),e.pool.length||(e.pool=Za(t.phrases.map((o,s)=>s)),e.pool.length>1&&e.pool[e.pool.length-1]===e.last&&([e.pool[e.pool.length-1],e.pool[e.pool.length-2]]=[e.pool[e.pool.length-2],e.pool[e.pool.length-1]]));let n=e.pool.pop();return e.last=n,t.phrases[n].replace(/\{n\}/g,a)}function De(t,a){let e=t.cast[0];Wa(e);let n=e.activePortrait||0,o=!1,s=document.createElement("div");s.className="beauty-frame";let i=()=>{let r=e.portraits[n]||e.portraits[0],l=r&&r.state||"初始",p=o?XZ:zZones(l),y=p.map((u,g)=>{let v=u.cx/300*100,E=u.cy/420*100,z=u.w/300*100,W=u.h/420*100;return`<button class="pzone" data-z="${g}"
+        style="left:${v}%;top:${E}%;width:${z}%;height:${W}%"><span>${u.key}</span></button>`}).join(""),h=e.portraits.map((u,g)=>`
+      <button data-pick="${g}" class="pstate" style="border-color:${g===n?"var(--acc)":"var(--line)"}">
+        <img src="${u.url}" alt="">
+        <span style="color:${g===n?"var(--acc)":"var(--dim)"}">${d(u.label||"立绘"+(g+1))}</span>
+      </button>`).join("");s.innerHTML=`
+      <div class="bar">
+        <span class="small muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d(e.name)} · ${d(l)}</span>
+        <span style="flex:1"></span>
+        <button class="btn sm ghost" data-cross>${o?"立绘":"截面"}</button>
+        <button class="btn sm ghost" data-toggle>隐藏</button>
+        <button class="btn sm ghost" data-x>关闭</button>
+      </div>
+      <div style="flex:1;display:grid;place-items:center;background:#0a0c12;overflow:hidden;padding:6px">
+        <div style="position:relative;width:min(86vw,320px);aspect-ratio:3/4.2">
+          ${o?`<div style="position:relative;width:100%;height:100%">${Xa(e)}<div id="zones">${y}</div></div>`:`<img src="${r.url}" style="width:100%;height:100%;object-fit:cover;border-radius:18px;display:block" alt="">
+          <div id="zones">${y}</div>`}
+        </div>
+      </div>
+      <div class="pstate-bar">${h}<button data-add class="pstate pstate-add"><span>＋</span><i>新增</i></button></div>`,s.querySelector("[data-x]").onclick=()=>s.remove(),s.querySelector("[data-cross]").onclick=()=>{o=!o,i()};let m=!0;s.querySelector("[data-toggle]").onclick=u=>{m=!m;let g=s.querySelector("#zones");g&&(g.style.display=m?"":"none"),u.target.textContent=m?"隐藏":"显示"},s.querySelectorAll(".pzone").forEach(u=>{u.onclick=()=>{let g=p[Number(u.dataset.z)];s.remove(),a(`（你${Va(g,e.name)}）`)}}),s.querySelectorAll("[data-pick]").forEach(u=>{u.onclick=async()=>{n=Number(u.dataset.pick),e.activePortrait=n,e.avatar=e.portraits[n].url,e.updatedAt=Date.now(),await b("chars",e),t.cast[0]&&(t.cast[0].avatar=e.avatar),await b("chats",t),i()}}),s.querySelector("[data-add]").addEventListener("click",()=>{Promise.resolve().then(()=>(dt(),gt)).then(u=>u.addPortrait(e,async()=>{s.remove(),await V(document.getElementById("app"),t.id),De(t,a)}))})};i(),document.body.appendChild(s)}function Wa(t){(!Array.isArray(t.portraits)||!t.portraits.length)&&(t.portraits=t.avatar?[{id:"p0",label:"初始",url:t.avatar,state:"初始"}]:[]),(typeof t.activePortrait!="number"||!t.portraits[t.activePortrait])&&(t.activePortrait=0),t.portraits.forEach((a,e)=>{["初始","内衣","全裸"].includes(a.state)||(a.state="初始")}),t.anatomy||(t.anatomy=An(t.seed||1))}function Xa(t){const c=t||{},an=c.anatomy||An(c.seed||1),k=an.depth,v=an.vulva,bs=an.bust,
+ bcy=172+(bs-0.5)*6,brx=26+bs*10,bry=23+bs*9,
+ uy=246+(k-0.5)*8,uw=27+v*8,uh=26+k*10,
+ vy=uy+uh*1.42,vl=52+k*22,oy=uy-2,ox=111+v*5,orr=8+v*3;
+ return`<svg viewBox="0 0 300 420" style="width:100%;height:100%;border-radius:18px;background:#050a10">
+<defs>
+<radialGradient id="xbg" cx="0.5" cy="0.42" r="0.62"><stop offset="0" stop-color="#0e2436"/><stop offset="1" stop-color="#050a10"/></radialGradient>
+<linearGradient id="xskin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#123247" stop-opacity="0.55"/><stop offset="1" stop-color="#0a1a26" stop-opacity="0.85"/></linearGradient>
+<linearGradient id="xut" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8567a"/><stop offset="1" stop-color="#7a3352"/></linearGradient>
+<linearGradient id="xvg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8d3f5e"/><stop offset="1" stop-color="#4e1f36"/></linearGradient>
+</defs>
+<rect width="300" height="420" fill="url(#xbg)"/>
+<path d="M150 22 C 108 26, 86 54, 84 96 C 82 138, 96 168, 96 208 C 96 248, 88 288, 92 328 C 96 368, 104 398, 110 416 L 190 416 C 196 398, 204 368, 208 328 C 212 288, 204 248, 204 208 C 204 168, 218 138, 216 96 C 214 54, 192 26, 150 22 Z" fill="url(#xskin)" stroke="#3f7ea6" stroke-width="1.6"/>
+<path d="M150 22 C 108 26, 86 54, 84 96 C 82 138, 96 168, 96 208 C 96 248, 88 288, 92 328 C 96 368, 104 398, 110 416 L 190 416 C 196 398, 204 368, 208 328 C 212 288, 204 248, 204 208 C 204 168, 218 138, 216 96 C 214 54, 192 26, 150 22 Z" fill="none" stroke="#7fd8ff" stroke-width="3.2" opacity="0.22"/>
+<line x1="150" y1="30" x2="150" y2="412" stroke="#2f6079" stroke-width="1" stroke-dasharray="5 8" opacity="0.75"/>
+<path d="M106 112 q44 -16 88 0" stroke="#356d8b" stroke-width="1.4" fill="none" opacity="0.8"/>
+<path d="M102 136 q48 -18 96 0" stroke="#356d8b" stroke-width="1.4" fill="none" opacity="0.72"/>
+<path d="M100 160 q50 -18 100 0" stroke="#356d8b" stroke-width="1.4" fill="none" opacity="0.64"/>
+<path d="M100 184 q50 -16 100 0" stroke="#356d8b" stroke-width="1.3" fill="none" opacity="0.5"/>
+<path d="M98 300 q52 30 104 0" stroke="#3f7ea6" stroke-width="2" fill="none" opacity="0.7"/>
+<path d="M100 312 q50 24 100 0" stroke="#3f7ea6" stroke-width="1.3" fill="none" opacity="0.45"/>
+<ellipse cx="${150-brx-6}" cy="${bcy}" rx="${brx}" ry="${bry}" fill="#1c4a63" opacity="0.55" stroke="#79c6e8" stroke-width="1.6"/>
+<ellipse cx="${150+brx+6}" cy="${bcy}" rx="${brx}" ry="${bry}" fill="#1c4a63" opacity="0.55" stroke="#79c6e8" stroke-width="1.6"/>
+<ellipse cx="${150-brx-6}" cy="${bcy}" rx="${brx*0.42}" ry="${bry*0.4}" fill="none" stroke="#a5e6ff" stroke-width="1.2" opacity="0.65"/>
+<ellipse cx="${150+brx+6}" cy="${bcy}" rx="${brx*0.42}" ry="${bry*0.4}" fill="none" stroke="#a5e6ff" stroke-width="1.2" opacity="0.65"/>
+<path d="M${ox} ${oy+10} q-${uw*0.5} -14 -${uw*0.9} -4" stroke="#d18aa8" stroke-width="4" fill="none" opacity="0.85"/>
+<path d="M${300-ox} ${oy+10} q${uw*0.5} -14 ${uw*0.9} -4" stroke="#d18aa8" stroke-width="4" fill="none" opacity="0.85"/>
+<ellipse cx="${ox}" cy="${oy}" rx="${orr}" ry="${orr*0.78}" fill="#8d4460" stroke="#e6a6c0" stroke-width="1.4"/>
+<ellipse cx="${300-ox}" cy="${oy}" rx="${orr}" ry="${orr*0.78}" fill="#8d4460" stroke="#e6a6c0" stroke-width="1.4"/>
+<path d="M${150-uw} ${uy} q${uw} -${uh*1.15} ${uw*2} 0 q-${uw*0.42} ${uh*0.86} -${uw*0.78} ${uh*1.36} l-${uw*0.44} 0 q-${uw*0.36} -${uh*0.5} -${uw*0.78} -${uh*1.36} Z" fill="url(#xut)" stroke="#f0a6c4" stroke-width="1.7"/>
+<path d="M${150-uw*0.5} ${uy+uh*0.15} q${uw*0.5} ${uh*0.5} ${uw} 0" stroke="#3a1424" stroke-width="6" fill="none" opacity="0.55"/>
+<path d="M${150-uw*0.24} ${vy-6} L${150-uw*0.28} ${vy+vl} L${150+uw*0.28} ${vy+vl} L${150+uw*0.24} ${vy-6}" fill="url(#xvg)" stroke="#e08fb0" stroke-width="1.5"/>
+<path d="M${150-uw*0.12} ${vy+8} q${uw*0.24} ${vl*0.2} 0 ${vl*0.22} q${uw*0.24} ${vl*0.2} 0 ${vl*0.22}" stroke="#f2b6cc" stroke-width="1.3" fill="none" opacity="0.6"/>
+<ellipse cx="150" cy="${vy+vl+6}" rx="${16+v*5}" ry="7.5" fill="#3a1420" stroke="#e08fb0" stroke-width="1.5"/>
+<ellipse cx="150" cy="${vy+vl+6}" rx="${7+v*3}" ry="3.2" fill="#20090f"/>
+<ellipse cx="150" cy="${vy+vl+30}" rx="${11+v*3}" ry="5.5" fill="#241016" stroke="#8c6b78" stroke-width="1.3"/>
+<ellipse cx="150" cy="${vy+vl+30}" rx="${4+v*2}" ry="2.4" fill="#120609"/>
+</svg>`}function Ya(t){let a=t.cast[0].theme||{},e=document.createElement("div");e.className="beauty-frame",e.innerHTML=`
+    <div class="bar"><span class="small muted">角色卡美化</span><span style="flex:1"></span>
+      <button class="btn sm ghost" data-x>关闭</button></div>
+    <iframe sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>`;let n=`<!doctype html><meta charset="utf-8"><style>html,body{margin:0;background:#000;color:#eee;font-family:system-ui,sans-serif}${a.css||""}
+.msg.narrative{max-width:100%!important}
+.msg.narrative .bubble{background:transparent!important;border:none!important;padding:2px 4px!important;box-shadow:none!important}
+.msg.narrative .txt{line-height:1.85;font-size:15px}
+</style>${a.html||`<div style="padding:14px"><p style="color:#8b93a6;font-size:13px;margin-bottom:8px">这张卡只有样式，没有模板 HTML。样式已经作用到聊天气泡上，下面是原文：</p><pre style="white-space:pre-wrap;font-size:12px;color:#a9b2c6">${d(a.css||"")}</pre></div>`}`;e.querySelector("iframe").srcdoc=n,e.querySelector("[data-x]").onclick=()=>e.remove(),document.body.appendChild(e)}function Kt(t,a,e){if(!t||!e)return;let n=null,o=()=>{n&&(clearTimeout(n),n=null)};t.addEventListener("pointerdown",s=>{s.button&&s.button!==0||(o(),n=setTimeout(()=>{n=null,_e(a,e)},520))}),["pointerup","pointerleave","pointercancel"].forEach(s=>t.addEventListener(s,o)),t.addEventListener("contextmenu",s=>{s.preventDefault(),o(),_e(a,e)})}async function _e(t,a){let e=(await L(t.id)).slice(-1)[0],n=e&&e.id===a.id,{el:o,close:s}=k(`
+    <h3>${a.role==="user"?"你的消息":"AI 的消息"}</h3>
+    <div class="list" style="padding:0">
+      <button class="list-item" data-a="copy"><span class="grow">复制</span></button>
+      <button class="list-item" data-a="edit"><span class="grow">编辑内容</span></button>
+      ${a.role==="assistant"&&n?'<button class="list-item" data-a="regen"><span class="grow">重新生成这条</span></button>':""}
+      <button class="list-item" data-a="del"><span class="grow" style="color:var(--bad)">删除这条</span></button>
+    </div>
+    <div class="foot"><button class="btn ghost" data-c>取消</button></div>`);o.querySelector("[data-c]").onclick=s,o.querySelector("[data-a=copy]").onclick=async()=>{try{await navigator.clipboard.writeText(a.content),f("已复制")}catch{f("复制失败，长按文字手动复制")}s()},o.querySelector("[data-a=edit]").onclick=async()=>{s();let{promptBox:r}=await Promise.resolve().then(()=>(C(),jt)),l=await r("编辑内容",a.content,"",!0);if(l==null)return;a.content=l,await b("messages",a);let p=document.getElementById("app");p&&V(p,t.id),f("已修改")};let i=o.querySelector("[data-a=regen]");i&&(i.onclick=async()=>{s();let l=[...await L(t.id)].reverse().find(m=>m.role==="user");if(!l)return f("找不到对应的提问");await B("messages",a.id),await V(document.getElementById("app"),t.id);let p=document.querySelector("#msgs"),y=document.querySelector("#input"),h=document.querySelector("#send");await Bt(document.getElementById("app"),t,p,y,h,{text:l.content,skipUser:!0,keepInput:!0})}),o.querySelector("[data-a=del]").onclick=async()=>{if(s(),!await M("删除这条消息？","删除",!0))return;await B("messages",a.id);let r=document.getElementById("app");r&&V(r,t.id)}}async function Qa(t){let a=await L(t.id),e=a.slice(0,Math.max(0,a.length-4));if(e.length<2)return f("先多聊几句再总结");let n=e.map(o=>`${o.role==="user"?"玩家":t.cast[0]?t.cast[0].name:"角色"}：${o.content}`).join(`
+`).slice(-4e3);f("正在总结…",15e3);try{let{text:o}=await it([{role:"system",content:"你是剧情记录员。用第三人称、200 字以内总结下面的剧情，保留：人物关系、重要地点、承诺与未解决的线索。只输出总结本身。"},{role:"user",content:(t.memory?"已有前情："+t.memory+`
+
+新增剧情：
+`:"")+n}],{temperature:.4,maxTokens:500});t.memory=o.trim().slice(0,600),t.updatedAt=Date.now(),await b("chats",t),f("前情已记住",2500)}catch(o){f(o.message||"总结失败",4e3)}}P();D();C();N();yt();C();Q();dt();var Wt={async mount(t){let a=(await x("worlds")).sort((e,n)=>(n.updatedAt||0)-(e.updatedAt||0));t.innerHTML=`
+      <div class="screen">
+        <div class="topbar">
+          <a class="icon-btn" href="#/home">‹</a>
+          <h1>大世界</h1>
+          <button class="icon-btn" data-new>＋</button>
+        </div>
+        <div class="list">
+          ${a.length?a.map(e=>`
+            <div class="list-item" data-id="${d(e.id)}">
+              <div class="avatar" style="background:linear-gradient(135deg,#3c4f9e,#6b3d8f);font-size:20px">🌍</div>
+              <div class="grow"><div class="title">${d(e.name)}</div><div class="sub">${d(e.desc||"还没有简介")}</div></div>
+            </div>`).join(""):'<div class="empty"><span class="big">🌍</span>还没有世界<br><br>建一个世界，把角色放进去</div>'}
+        </div>
+      </div>`,t.querySelectorAll(".list-item").forEach(e=>{e.onclick=()=>w(`world/${e.dataset.id}`)}),t.querySelector("[data-new]").onclick=()=>He(null,()=>Wt.mount(t))}},et={async mount(t,a){let e=await A("worlds",a);if(!e)return f("世界不存在"),w("worlds");let n=(await x("chars")).filter(s=>s.worldId===a),cs=(await x("chats")).filter(s=>s.worldId===a).sort((p,q)=>(q.updatedAt||0)-(p.updatedAt||0)).slice(0,30);t.innerHTML=`
+      <div class="screen">
+        <div class="topbar">
+          <a class="icon-btn" href="#/worlds">‹</a>
+          <h1>${d(e.name)}</h1>
+          <button class="icon-btn" data-append title="追加设定">＋</button><button class="icon-btn" data-edit>✎</button>
+        </div>
+        <div class="world-head">${e.desc?`<p>${d(e.desc)}</p>`:""}</div>
+        <div class="section-title">角色 <span class="spacer"></span>
+          <button class="btn sm ghost" data-genchar>✨ AI 生成</button><button class="btn sm ghost" data-add>＋ 添加</button>
+        </div>
+        <div class="char-grid" id="grid">
+          ${n.length?n.map(s=>`
+            <div class="char-card" data-id="${d(s.id)}">
+              <img class="pic" src="${s.avatar||S(_(s.seed||1))}" alt="">
+              <div class="meta"><b>${d(s.name)}${s.dead?' <span style="color:#f04d5e;font-size:11px">已故</span>':""}</b><span>${d(s.personality||s.desc||"")}</span></div>
+              <div class="sel"></div>
+              <button class="icon-btn" data-more="${d(s.id)}" style="position:absolute;left:6px;top:6px;width:30px;height:30px;background:rgba(0,0,0,.45);border-radius:10px;font-size:15px">⋯</button>
+            </div>`).join(""):'<div class="empty" style="grid-column:1/-1"><span class="big">🎭</span>世界里还没有角色</div>'}
+        </div>
+        <div class="section-title">剧情 <span class="spacer"></span><span class="small muted">${cs.length} 段</span></div>
+        <div class="list" style="padding:0 14px">
+          ${cs.length?cs.map(function(c){return `<div class="list-item" data-ch="${d(c.id)}"><div class="grow"><div class="title">${d(c.title||"未命名")}</div><div class="sub">${d(String(c.preview||"").slice(0,40)||"（还没有内容）")}</div></div><span class="small muted">${d(c.mode==="scene"?"场景":c.mode==="tavern"?"酒馆":"猫箱")}</span></div>`}).join(""):`<div class="empty" style="padding:14px 0"><span class="small">还没有剧情。打一场、开个场景，或者点下面的按钮。</span></div>`}
+        </div>
+        <div class="pad" style="position:sticky;bottom:0;background:linear-gradient(180deg,transparent,var(--bg) 30%);padding-top:20px">
+          <div class="row">
+            <button class="btn" style="flex:1" data-battle>⚔️ 对战</button>
+            <button class="btn primary" style="flex:2" data-scene>开始场景对话</button>
+          </div>
+        </div>
+      </div>`;let o=new Set;t.querySelectorAll(".char-card").forEach(s=>{s.onclick=()=>{let i=s.dataset.id;o.has(i)?(o.delete(i),s.classList.remove("selected")):(o.add(i),s.classList.add("selected"))}}),t.querySelectorAll("[data-more]").forEach(s=>{s.onclick=i=>{i.stopPropagation();let r=n.find(y=>y.id===s.dataset.more);if(!r)return;let{el:l,close:p}=k(`
+          <h3>${d(r.name)}</h3>
+          <div class="list" style="padding:0">
+            <button class="list-item" data-act="chat"><span class="grow">单独聊天</span></button>
+            <button class="list-item" data-act="portrait"><span class="grow">换立绘</span></button>
+            <button class="list-item" data-act="edit"><span class="grow">编辑设定</span></button>
+            <button class="list-item" data-act="out"><span class="grow" style="color:var(--bad)">移出这个世界</span></button>
+          </div>
+          <div class="foot"><button class="btn ghost" data-c>取消</button></div>`);l.querySelector("[data-c]").onclick=p,l.querySelector("[data-act=chat]").onclick=async()=>{p();let y=O({mode:"catbox",cast:[r],world:e,title:r.name,lore:await ot()});await b("chats",y),w(`chat/${y.id}`)},l.querySelector("[data-act=portrait]").onclick=()=>{p(),lt(r,()=>et.mount(t,a))},l.querySelector("[data-act=edit]").onclick=()=>{p(),Promise.resolve().then(()=>(dt(),gt)).then(y=>y.editChar(r.id,"catbox",()=>et.mount(t,a)))},l.querySelector("[data-act=out]").onclick=async()=>{p(),await M("把「"+r.name+"」移出这个世界？角色本身不会删除。","移出",!0)&&(r.worldId="",await b("chars",r),et.mount(t,a))}}}),t.querySelectorAll("[data-ch]").forEach(function(b){b.onclick=function(){w("chat/"+b.dataset.ch)}}),t.querySelector("[data-edit]").onclick=()=>He(e,()=>et.mount(t,a)),t.querySelector("[data-add]").onclick=()=>tn(e,()=>et.mount(t,a)),t.querySelector("[data-genchar]").onclick=()=>zBgenChar(e,()=>et.mount(t,a)),t.querySelector("[data-append]").onclick=()=>zBappend(e,()=>et.mount(t,a)),t.querySelector("[data-scene]").onclick=async()=>{let s=n.filter(r=>o.has(r.id));if(!s.length)return f("先点选一个或多个角色");let i=O({mode:"scene",cast:s,world:e,title:`${e.name} · 场景`,lore:await ot()});await b("chats",i),w(`chat/${i.id}`)},t.querySelector("[data-battle]").onclick=async()=>{let s=n.filter(i=>o.has(i.id));if(!s.length)return f("先点选要出场的角色");zBpick(s,e)}}};async function He(t,a){let e=(await x("libs")).filter(l=>l.type==="world"),n=t||Lt(),{el:o,close:s}=k(`
+    <h3>${t?"编辑世界":"新建世界"}</h3>
+    <div class="field"><label>世界名</label><input class="input" name="name" value="${d(n.name==="未命名世界"?"":n.name)}" placeholder="例如 雾港纪事"></div>
+    <div class="field"><label>一句话简介</label><input class="input" name="desc" value="${d(n.desc)}" placeholder="给玩家看的简介"></div>
+    <div class="field"><label>世界观设定（会注入每次对话）</label>
+      ${e.length?`<select class="select" name="lib"><option value="">— 从世界观库选一条 —</option>
+        ${e.map(l=>`<option value="${d(l.id)}">${d(l.name)}</option>`).join("")}</select>`:""}
+      <textarea class="textarea" name="prompt" rows="6" placeholder="时代、地点、规则、势力、禁忌…">${d(n.prompt)}</textarea>
+      <button class="btn sm" data-ai style="align-self:flex-start">✨ 让 AI 写一个</button><button class="btn sm" data-enrich style="align-self:flex-start;margin-left:6px">➕ 丰富现有</button>
+    </div>
+    <div class="foot">
+      ${t?'<button class="btn danger" data-del>删除</button>':""}
+      <button class="btn ghost" data-pick>📚 资料</button>
+      <button class="btn ghost" data-cancel>取消</button>
+      <button class="btn primary" data-save>保存</button>
+    </div>`),i=o.querySelector("[name=lib]");i&&(i.onchange=async()=>{let l=await A("libs",i.value);l&&(o.querySelector("[name=prompt]").value=l.body)}),o.querySelector("[data-ai]").onclick=async()=>{let l=await at("想要什么世界？","","例如：被海水淹没的旧城，靠潜水打捞为生");if(l!=null){f("正在生成…",2e4);try{let p=await U("world"),y=await Y(`${p?p+`
+
+`:""}写一个适合角色扮演的中文世界设定。想法：${l||"你自己想一个有意思的"}。
+只输出 JSON，不要代码块：
+{"name":"世界名，8字以内","desc":"一句话简介，30字以内","prompt":"300到500字的世界观：时代、地点、势力、规则、日常冲突、禁忌"}`,{maxTokens:900}),h=J(y);h.name&&(o.querySelector("[name=name]").value=h.name),h.desc&&(o.querySelector("[name=desc]").value=h.desc),h.prompt&&(o.querySelector("[name=prompt]").value=h.prompt),f("生成好了，检查一下再保存",3e3)}catch(p){f(p.message||"生成失败",4e3)}}},o.querySelector("[data-pick]").onclick=()=>zPickDialog(n,()=>{}),o.querySelector("[data-enrich]").onclick=async()=>{var ta=o.querySelector("[name=prompt]"),cur=ta.value.trim();if(!cur){f("先写一点设定，或者让 AI 写一个");return}f("正在扩写…",3e4);try{var rz=await Y("下面是已有的世界观设定。请保留原有内容，只做扩写：补充细节、势力、地点、规则和日常冲突。不要删掉原文，只输出扩写后的完整设定正文，不要解释。\n\n"+cur,{maxTokens:1200,temperature:.9});ta.value=String(rz||"").trim()||cur;f("扩写好了，检查一下再保存",3000)}catch(er){f(er.message||"扩写失败",4000)}},o.querySelector("[data-cancel]").onclick=s;let r=o.querySelector("[data-del]");r&&(r.onclick=async()=>{await M("删除这个世界的设定？世界里的角色会变成「未归属」。","删除",!0)&&(await B("worlds",n.id),s(),f("已删除"),a&&a())}),o.querySelector("[data-save]").onclick=async()=>{let l=o.querySelector("[name=name]").value.trim();if(!l)return f("世界名不能为空");Object.assign(n,{name:l,desc:o.querySelector("[name=desc]").value.trim(),prompt:o.querySelector("[name=prompt]").value.trim(),updatedAt:Date.now()}),await b("worlds",n),s(),f("已保存"),a&&a()}}async function tn(t,a){let e=Math.floor(Math.random()*99999),{el:n,close:o}=k(`
+    <h3>添加角色 · ${d(t.name)}</h3>
+    <div class="row" style="gap:12px;align-items:flex-start">
+      <img id="pv" src="${S(_(e))}" style="width:84px;height:112px;object-fit:cover;border-radius:12px">
+      <div style="flex:1">
+        <div class="field"><label>名字</label><input class="input" name="name" placeholder="角色名"></div>
+        <div class="row" style="gap:6px">
+          <button class="btn sm" data-rand style="flex:1">换一张</button>
+          <button class="btn sm" data-up style="flex:1">上传</button>
+        </div>
+      </div>
+    </div>
+    <div class="field"><label>设定</label><textarea class="textarea" name="desc" rows="2" placeholder="身份、背景、和玩家的关系"></textarea></div>
+    <div class="field"><label>性格</label><textarea class="textarea" name="personality" rows="2" placeholder="说话方式、脾气、在意的事"></textarea></div>
+    <div class="foot"><button class="btn ghost" data-cancel>取消</button><button class="btn primary" data-save>保存</button></div>`),s=S(_(e)),i=e;n.querySelector("[data-rand]").onclick=()=>{i=Math.floor(Math.random()*99999),s=S(_(i)),n.querySelector("#pv").src=s},n.querySelector("[data-up]").onclick=async()=>{let r=await T("image/*");r&&(s=await ct(r,512),n.querySelector("#pv").src=s)},n.querySelector("[data-cancel]").onclick=o,n.querySelector("[data-save]").onclick=async()=>{let r=n.querySelector("[name=name]").value.trim();if(!r)return f("名字不能为空");let l=G({name:r,gender:"f",avatar:s,seed:i,worldId:t.id,source:"manual",desc:n.querySelector("[name=desc]").value.trim(),personality:n.querySelector("[name=personality]").value.trim()});await b("chars",l),o(),f("已添加"),a&&a()}}var Xt={};K(Xt,{mount:()=>vt});P();D();C();N();Q();var bt=["健康","智力","魅力","财富","心情"];async function vt(t){let e=(await x("chats")).filter(n=>n.mode==="life"&&n.life).sort((n,o)=>(o.updatedAt||0)-(n.updatedAt||0))[0];if(!e)return an(t);nn(t,e)}async function an(t){let a=(await x("libs")).filter(n=>n.type==="world");t.innerHTML=`
+    <div class="screen">
+      <div class="topbar"><a class="icon-btn" href="#/home">‹</a><h1>人生模拟</h1></div>
+      <div class="pad">
+        <p class="small muted" style="margin-bottom:14px">从 16 岁开始，每回合过一年。健康归零或活到 80 岁，这一生就结束。</p>
+        <div class="field"><label>你的名字</label><input class="input" id="name" placeholder="随便取一个"></div>
+        <div class="field"><label>出身</label>
+          <select class="select" id="origin">
+            <option>普通小镇家庭</option><option>大城市中产</option><option>偏远山村</option>
+            <option>单亲家庭</option><option>富裕商人家庭</option><option>孤儿院</option>
+          </select></div>
+        <div class="field"><label>世界设定</label>
+          ${a.length?`<select class="select" id="lib"><option value="">— 用世界观库 —</option>
+            ${a.map(n=>`<option value="${d(n.id)}">${d(n.name)}</option>`).join("")}</select>`:""}
+          <textarea class="textarea" id="world" rows="4" placeholder="留空就是普通现代世界">${d("")}</textarea></div>
+        <div class="field"><label>开场白（可选，会作为第一段剧情）</label>
+          <textarea class="textarea" id="opening" rows="3" placeholder="例如：十六岁那年夏天，你在码头等到了一封没有署名的信。"></textarea></div>
+        <button class="btn primary" id="go" style="width:100%">开始这一生</button>
+      </div>
+    </div>`;let e=document.getElementById("lib");e&&(e.onchange=async()=>{let n=await A("libs",e.value);n&&(document.getElementById("world").value=n.body)}),document.getElementById("go").onclick=async()=>{let n=document.getElementById("name").value.trim()||"无名",o=document.getElementById("world").value.trim(),s=document.getElementById("origin").value,i=O({mode:"life",title:`${n}的一生`});i.life={name:n,age:16,origin:s,world:o,opening:document.getElementById("opening").value.trim(),stats:{健康:82,智力:62,魅力:55,财富:30,心情:70},log:[],options:[],ended:!1,turn:0},await b("chats",i),w("life")}}function nn(t,a){let e=a.life,n=e.log.slice(-4);t.innerHTML=`
+    <div class="screen">
+      <div class="topbar">
+        <a class="icon-btn" href="#/home">‹</a>
+        <h1>${d(e.name)} · ${e.age} 岁</h1>
+        <button class="icon-btn" id="editLife" title="编辑身份">✎</button>
+        <button class="icon-btn" id="restart" title="重开">↻</button>
+      </div>
+      <div class="stats">
+        ${bt.map(r=>`<div class="stat"><span>${r}</span><b>${e.stats[r]}</b></div>`).join("")}
+      </div>
+      <div class="pad" style="padding-top:0;padding-bottom:0;overflow-y:auto" id="timeline">
+        ${n.length?n.map(r=>`
+          <div class="card" style="margin-bottom:10px;position:relative">
+            <button class="icon-btn" data-log="${e.log.indexOf(r)}" style="position:absolute;right:6px;top:4px;width:28px;height:28px;font-size:13px">✎</button>
+            <div class="small muted" style="margin-bottom:6px">${r.age} 岁</div>
+            <div style="white-space:pre-wrap;font-size:14px">${d(r.text)}</div>
+            ${r.choice?`<div class="small" style="color:var(--acc);margin-top:8px">你的选择：${d(r.choice)}</div>`:""}
+          </div>`).join(""):'<div class="empty"><span class="big">🕯️</span>这一生刚刚开始</div>'}
+      </div>
+      <div class="pad" id="actions" style="padding-top:8px">
+        ${e.ended?`
+          <div class="card" style="text-align:center">
+            <div style="font-size:15px;margin-bottom:6px">这一生结束了</div>
+            <div class="small muted">享年 ${e.age} 岁</div>
+            <button class="btn primary" style="margin-top:12px;width:100%" id="newlife">重新开始</button>
+          </div>`:`
+          <div class="row wrap" id="opts">
+            ${(e.options||[]).map((r,l)=>`<button class="btn" data-opt="${l}" style="flex:1 1 100%;text-align:left;justify-content:flex-start">${d(r.text)}</button>`).join("")}
+          </div>
+          <div class="row" style="margin-top:8px">
+            <input class="input" id="free" placeholder="或者自己写一个行动…">
+            <button class="send" id="freeGo">➤</button>
+          </div>
+          <button class="btn ghost small" id="rewrite" style="margin-top:10px;width:100%">↻ 重写这一年</button>`}
+      </div>
+    </div>`,document.getElementById("restart").onclick=async()=>{if(!e.log.length)return a.life=null,await b("chats",a),w("life");confirm("重开一段人生？当前进度会丢失。")&&(a.life=null,await b("chats",a),w("life"))},document.getElementById("editLife").onclick=()=>ln(a);let o=document.getElementById("rewrite");o&&(o.onclick=async()=>{let r=e.log[e.log.length-1];if(r){if(r.choice)return f("这一年已经选过了，重写会把后续剧情打乱，先不要啦");e.log.pop(),e.options=[],a.updatedAt=Date.now(),await b("chats",a),Ct(a)}}),document.getElementById("newlife")&&(document.getElementById("newlife").onclick=async()=>{a.life=null,await b("chats",a),w("life")}),t.querySelectorAll("[data-log]").forEach(r=>{r.onclick=async()=>{let l=Number(r.dataset.log),{promptBox:p}=await Promise.resolve().then(()=>(C(),jt)),y=await p("编辑这段剧情",e.log[l].text,"",!0);y!=null&&(e.log[l].text=y,a.updatedAt=Date.now(),await b("chats",a),vt(document.getElementById("app")))}}),t.querySelectorAll("[data-opt]").forEach(r=>{r.onclick=()=>Ct(a,e.options[Number(r.dataset.opt)].text)});let s=document.getElementById("freeGo");s&&(s.onclick=()=>{let r=document.getElementById("free").value.trim();r&&Ct(a,r)}),!e.log.length&&!e.ended&&Ct(a);let i=document.getElementById("timeline");i&&(i.scrollTop=i.scrollHeight)}function sn(t){return[`你是「人生模拟器」的叙事引擎。玩家：${t.name}，${t.age} 岁，出身${t.origin}。`,t.world?`世界设定：${t.world}`:"世界设定：当代普通社会。",t.opening?`用户给的开场：${t.opening}（第一段请顺着这个开头写，不要重复它）`:"",`当前属性：${bt.map(a=>`${a}${t.stats[a]}`).join("，")}。`,"写这一年发生的一件事，再给玩家 3 个可选行动。","严格只输出 JSON，不要代码块、不要多余文字：",'{"narration":"这一年发生了什么，120字以内，具体、有画面","options":[{"text":"行动描述，30字以内","effects":{"健康":0,"智力":0,"魅力":0,"财富":0,"心情":0}}, {...}, {...}]}',"effects 可省略字段，数值范围 -15 到 15。三个选项要风格不同：稳重、冒险、出人意料。"].join(`
+`)}async function Ct(t,a){let e=t.life;if(!Ie())return f("先去设置里填 API Key");if(a){let i=(e.options||[]).find(l=>l.text===a);i&&on(e,i.effects||{});let r=e.log[e.log.length-1];if(r&&!r.choice&&(r.choice=a),e.age=Math.min(80,e.age+1),e.turn++,e.age>=80||e.stats.健康<=0)return e.ended=!0,t.updatedAt=Date.now(),await b("chats",t),vt(document.getElementById("app"))}f(a?"正在推进这一年…":"正在展开…",1400);let n=document.querySelector("#actions");n&&(n.style.opacity=".5");let o=await U("life"),s=[{role:"system",content:sn(e)+(o?`
+
+`+o:"")}];for(let i of e.log.slice(-3))s.push({role:"assistant",content:JSON.stringify({narration:i.text,options:i.options||[]})}),i.choice&&s.push({role:"user",content:`我选择：${i.choice}`});a?s.push({role:"user",content:`我选择：${a}。请写 ${e.age} 岁这一年。`}):s.push({role:"user",content:`请写 ${e.age} 岁这一年。`});try{let{text:i}=await it(s,{temperature:.95,maxTokens:900}),r=J(i),l=r.narration||String(i).slice(0,300),p=(r.options||[]).filter(y=>y&&y.text).slice(0,3);e.log.push({age:e.age,text:l,options:p}),e.options=p.length?p:rn(),t.updatedAt=Date.now(),await b("chats",t),vt(document.getElementById("app"))}catch(i){console.error(i),f(i.message||"生成失败",4e3),n&&(n.style.opacity="1")}}function on(t,a){for(let e of bt)typeof a[e]=="number"&&(t.stats[e]=Math.max(0,Math.min(100,t.stats[e]+a[e])))}function rn(){return[{text:"稳妥一点，先把眼前的事做好"},{text:"冒险试一次，赌一把"},{text:"找人聊聊，看看别人的想法"}]}async function ln(t){let a=t.life,{el:e,close:n}=k(`
+    <h3>编辑身份</h3>
+    <div class="field"><label>名字</label><input class="input" name="name" value="${d(a.name)}"></div>
+    <div class="field"><label>出身</label><input class="input" name="origin" value="${d(a.origin||"")}"></div>
+    <div class="field"><label>世界设定</label><textarea class="textarea" name="world" rows="4">${d(a.world||"")}</textarea></div>
+    <div class="field"><label>年龄</label><input class="input" type="number" name="age" value="${a.age}" min="1" max="80"></div>
+    <div class="row wrap" style="gap:8px">
+      ${bt.map(o=>`<div class="field" style="width:30%"><label>${o}</label><input class="input" type="number" name="s_${o}" value="${a.stats[o]}" min="0" max="100"></div>`).join("")}
+    </div>
+    <div class="foot"><button class="btn ghost" data-c>取消</button><button class="btn primary" data-s>保存</button></div>`);e.querySelector("[data-c]").onclick=n,e.querySelector("[data-s]").onclick=async()=>{a.name=e.querySelector("[name=name]").value.trim()||a.name,a.origin=e.querySelector("[name=origin]").value.trim(),a.world=e.querySelector("[name=world]").value.trim(),a.age=Math.max(1,Math.min(80,Number(e.querySelector("[name=age]").value)||a.age));for(let o of bt){let s=Number(e.querySelector(`[name=s_${o}]`).value);Number.isNaN(s)||(a.stats[o]=Math.max(0,Math.min(100,s)))}t.updatedAt=Date.now(),await b("chats",t),n(),f("已保存"),vt(document.getElementById("app"))}}var Yt={};K(Yt,{mount:()=>cn});N();D();C();Q();async function cn(t){let a=q();t.innerHTML=`
+    <div class="screen">
+      <div class="topbar"><a class="icon-btn" href="#/home">‹</a><h1>设置</h1>
+        <button class="btn sm primary" id="save">保存</button></div>
+      <div class="pad">
+        <div class="section-title" style="padding:6px 0 8px">模型接口</div>
+        <div class="field"><label>API Key</label>
+          <input class="input" id="apiKey" type="password" value="${d(a.apiKey)}" placeholder="sk-…">
+          <div class="hint">只存在这台设备的浏览器里，不会上传。DeepSeek 官网可申请。</div></div>
+        <div class="field"><label>API 地址</label>
+          <input class="input" id="baseUrl" value="${d(a.baseUrl)}" placeholder="https://api.deepseek.com">
+          <div class="hint">填到 <code>/v1</code> 也可以。换其他 OpenAI 兼容服务时改这里。</div></div>
+        <div class="field"><label>模型</label>
+          <div class="row"><input class="input" id="model" value="${d(a.model)}" placeholder="deepseek-chat">
+            <button class="btn sm" id="loadModels" style="flex:none">选模型</button></div>
+          <div class="row" style="margin-top:6px"><button class="btn sm" id="test">测试连接</button>
+            <span class="small muted" id="modelHint"></span></div></div>
+        <div class="field"><label>CORS 代理（可选）</label>
+          <input class="input" id="proxy" value="${d(a.proxy)}" placeholder="https://你的代理.workers.dev/{url}">
+          <div class="hint">DeepSeek 官方地址支持浏览器直连，一般不用填。换别家接口被跨域拦住时再用。</div></div>
+
+        <div class="hr"></div>
+        <div class="section-title" style="padding:0 0 8px">对话参数</div>
+        <div class="field"><label>温度 <span id="tVal" class="muted">${a.temperature}</span></label>
+          <input type="range" id="temperature" min="0" max="2" step="0.1" value="${a.temperature}" style="width:100%"></div>
+        <div class="field"><label>单次回复上限（token）</label>
+          <input class="input" id="maxTokens" type="number" value="${a.maxTokens}"></div>
+        <div class="field"><label>带上的历史条数</label>
+          <input class="input" id="maxHistory" type="number" value="${a.maxHistory}"></div>
+        <div class="field"><label>流式输出</label>
+          <label class="row" style="gap:8px"><input type="checkbox" id="stream" ${a.stream?"checked":""}> 边生成边显示</label></div>
+        <div class="field"><label>玩家设定（全局）</label><textarea class="textarea" id="userPersona" rows="3" placeholder="你是谁：名字、身份、外貌、和角色的关系。所有对话都会带上。">${d(a.userPersona||"")}</textarea><div class="hint">对所有对话生效。想给某一段对话单独设定，进聊天页 ⋯ 菜单。</div></div>
+        <div class="field"><label>大世界开场白</label><textarea class="textarea" id="worldIntro" rows="3" placeholder="进入大世界场景时，先让 AI 写这一段">${d(a.worldIntro||"")}</textarea><div class="hint">大世界多人时用这段当开场，不再拿角色自己的开场白顶替。</div></div>
+        <div class="field"><label>全局系统提示（可选）</label>
+          <textarea class="textarea" id="system" rows="3" placeholder="对所有对话生效的额外要求">${d(a.system)}</textarea></div>
+
+        <div class="hr"></div>
+        <div class="section-title" style="padding:0 0 8px">立绘</div>
+        <a href="#/studio" class="btn" style="width:100%;justify-content:flex-start;margin-bottom:6px">🎨 立绘工坊 · 描述一句，生成一张</a><a href="#/portraits" class="btn" style="width:100%;justify-content:flex-start;margin-bottom:6px">🖼 查看所有立绘 · 按角色分组</a><button class="btn" id="fillAll" style="width:100%;justify-content:flex-start;margin-bottom:6px">⚡ 给所有角色补齐 初始/内衣/全裸</button>
+        <div class="hr"></div>
+        <div class="section-title" style="padding:0 0 8px">外观</div>
+        <div class="row" style="gap:8px;margin-bottom:6px">
+          ${[["auto","跟随系统"],["dark","暗色"],["light","亮色"]].map(([o,s])=>`
+            <button class="chip ${(a.theme||"auto")===o?"on":""}" data-theme="${o}">${s}</button>`).join("")}
+        </div>
+        <div class="hr"></div>
+        <div class="section-title" style="padding:0 0 8px">存档</div>
+        <p class="small muted" style="margin-bottom:10px">数据在浏览器里。换设备、清缓存前先导出备份。</p>
+        <div class="row wrap">
+          <button class="btn" id="export">导出备份</button>
+          <button class="btn" id="import">导入备份</button>
+          <button class="btn danger" id="wipe">清空全部</button>
+        </div>
+        <div class="small muted" id="usage" style="margin-top:12px"></div>
+
+        <div class="hr"></div>
+        <div class="small muted" style="line-height:1.8">
+          角色宇宙 v0.1 · 纯静态网页，没有服务器<br>
+          API Key 和对话都只保存在本浏览器<br>
+          <a href="#/lib">提示词库 / 世界观库</a>
+        </div>
+      </div>
+    </div>`,document.getElementById("temperature").oninput=o=>{document.getElementById("tVal").textContent=o.target.value},document.getElementById("save").onclick=()=>{nt({apiKey:document.getElementById("apiKey").value.trim(),baseUrl:document.getElementById("baseUrl").value.trim(),model:document.getElementById("model").value.trim(),proxy:document.getElementById("proxy").value.trim(),temperature:Number(document.getElementById("temperature").value),maxTokens:Number(document.getElementById("maxTokens").value)||1600,maxHistory:Number(document.getElementById("maxHistory").value)||30,stream:document.getElementById("stream").checked,system:document.getElementById("system").value,userPersona:document.getElementById("userPersona").value,worldIntro:document.getElementById("worldIntro").value}),f("已保存")},document.getElementById("test").onclick=async()=>{document.getElementById("save").click(),f("正在连接…",5e3);try{let o=await Te();f("连接正常："+o.slice(0,20),3e3)}catch(o){f(o.message||"连接失败",5e3)}};let e=[];document.getElementById("loadModels").onclick=async()=>{document.getElementById("save").click();let o=document.getElementById("modelHint");o&&(o.textContent="正在拉取…");try{e=await je(),o&&(o.textContent=`共 ${e.length} 个`),n(e)}catch(s){o&&(o.textContent=""),f(s.message||"拉取失败",4e3)}},document.getElementById("export").onclick=async()=>{let o=await me();Z(`角色宇宙-备份-${new Date().toISOString().slice(0,10)}.json`,JSON.stringify(o)),f("已导出")},document.getElementById("import").onclick=async()=>{let o=await T(".json,application/json");if(o&&await M("导入会合并到现有数据，同名条目可能被覆盖。继续？","导入"))try{let s=JSON.parse(await o.text());await ye(s),f("导入完成"),w("home")}catch(s){f("导入失败："+(s.message||s),4e3)}},document.getElementById("wipe").onclick=async()=>{await M("清空全部角色、世界、对话和存档？不可恢复。","清空",!0)&&(await he(),f("已清空"),w("home"))},t.querySelectorAll("[data-theme]").forEach(o=>{o.onclick=()=>{ve(o.dataset.theme),t.querySelectorAll("[data-theme]").forEach(s=>s.classList.toggle("on",s===o)),f("外观已切换")}});function n(o){let{el:s,close:i}=k(`
+      <h3>选一个模型（${o.length}）</h3>
+      <div class="list" style="padding:0;max-height:56vh;overflow-y:auto">
+        ${o.map(r=>`<div class="list-item" data-pick="${d(r)}"><div class="grow"><div class="title" style="font-size:13.5px">${d(r)}</div></div></div>`).join("")}
+      </div>
+      <div class="foot"><button class="btn ghost" data-c>取消</button></div>`);s.querySelector("[data-c]").onclick=i,s.querySelectorAll("[data-pick]").forEach(r=>{r.onclick=()=>{document.getElementById("model").value=r.dataset.pick,document.getElementById("save").click(),i(),f("已切换为 "+r.dataset.pick)}})}navigator.storage&&navigator.storage.estimate&&navigator.storage.estimate().then(o=>{let s=r=>(r/1048576).toFixed(1)+" MB",i=document.getElementById("usage");i&&(i.textContent=`已用 ${s(o.usage||0)} / 可用约 ${s(o.quota||0)}`)})}var te={};K(te,{mount:()=>wt});P();C();var I="prompt",Re={prompt:"提示词库",world:"世界观库",lore:"世界书",gen:"生成提示词"},Ge={char:"猫箱角色",world:"大世界",tavern:"酒馆卡",life:"人生模拟",portrait:"立绘"};async function wt(t){let a=(await x("libs")).filter(e=>e.type===I).sort((e,n)=>e.builtin===n.builtin?(e.createdAt||0)-(n.createdAt||0):e.builtin?1:-1);t.innerHTML=`
+    <div class="screen">
+      <div class="topbar"><a class="icon-btn" href="#/home">‹</a><h1>资料库</h1>
+        <button class="btn sm" data-import>导入</button>
+        <button class="icon-btn" data-new>＋</button></div>
+      <div class="row" style="padding:10px 16px 0;gap:8px;flex-wrap:wrap">
+        ${Object.entries(Re).map(([e,n])=>`<button class="chip ${I===e?"on":""}" data-tab="${e}">${n}</button>`).join("")}
+      </div>
+      <div class="pad" style="padding-bottom:0"><p class="small muted" style="margin-top:10px">${dn(I)}</p></div>
+      <div class="list">
+        ${a.length?a.map(e=>`
+          <div class="list-item" data-id="${d(e.id)}">
+            <div class="grow">
+              <div class="title">${d(e.name)} ${e.builtin?'<span class="chip">内置</span>':""} ${e.type==="gen"&&e.mode?`<span class="chip">${d(Ge[e.mode]||e.mode)}</span>`:""}</div>
+              <div class="sub">${d((e.body||"").slice(0,60))}${e.keys&&e.keys.length?" · 关键词："+d(e.keys.join("、")):""}</div>
+            </div>
+            <button class="icon-btn" data-edit="${d(e.id)}">✎</button>
+          </div>`).join(""):'<div class="empty"><span class="big">📚</span>还没有内容</div>'}
+      </div>
+    </div>`,t.querySelectorAll("[data-tab]").forEach(e=>{e.onclick=()=>{I=e.dataset.tab,wt(t)}}),t.querySelectorAll("[data-edit]").forEach(e=>{e.onclick=n=>{n.stopPropagation(),Qt(e.dataset.edit,t)}}),t.querySelectorAll(".list-item").forEach(e=>{e.onclick=()=>Qt(e.dataset.id,t)}),t.querySelector("[data-new]").onclick=()=>Qt(null,t),t.querySelector("[data-import]").onclick=()=>pn(t)}function dn(t){return t==="prompt"?"提示词会在每次生成前追加给 AI，用来规定叙事风格。":t==="world"?"世界观可以一键填进世界里，也会随世界注入对话。":t==="gen"?"每个模式生成内容时都会附上这里的提示词；可以按模式分开写，也能导入自己的模板。":"世界书：写着关键词，聊天内容命中关键词时就自动塞进上下文。可以一条一条建，也能导入酒馆的世界书 JSON。"}async function Qt(t,a){let e=await x("libs"),n=t?e.find(l=>l.id===t):null,o=n||{id:j("l_"),type:I,name:"",body:"",keys:[],createdAt:Date.now()},{el:s,close:i}=k(`
+    <h3>${n?"编辑":"新建"}${Re[I]}</h3>
+    <div class="field"><label>名称</label><input class="input" name="name" value="${d(o.name)}"></div>
+    ${I==="lore"?`<div class="field"><label>关键词（逗号分隔，留空表示一直生效）</label>
+      <input class="input" name="keys" value="${d((o.keys||[]).join("，"))}" placeholder="例如：书店，雨天，老周"></div>`:""}
+    ${I==="gen"?`<div class="field"><label>用在哪个模式</label>
+      <select class="select" name="mode">${Object.entries(Ge).map(([l,p])=>`<option value="${l}" ${o.mode===l?"selected":""}>${p}</option>`).join("")}</select></div>`:""}
+    <div class="field"><label>内容</label><textarea class="textarea" name="body" rows="10">${d(o.body)}</textarea></div>
+    <div class="foot">
+      ${n?'<button class="btn danger" data-del>删除</button>':""}
+      <button class="btn ghost" data-cancel>取消</button>
+      <button class="btn primary" data-save>保存</button>
+    </div>`);s.querySelector("[data-cancel]").onclick=i;let r=s.querySelector("[data-del]");r&&(r.onclick=async()=>{await M("删除这条？","删除",!0)&&(await B("libs",o.id),i(),wt(a),f("已删除"))}),s.querySelector("[data-save]").onclick=async()=>{let l=s.querySelector("[name=name]").value.trim(),p=s.querySelector("[name=body]").value.trim();if(!l)return f("名称不能为空");if(Object.assign(o,{name:l,body:p,type:I}),I==="lore"){let y=s.querySelector("[name=keys]").value||"";o.keys=y.split(/[,，、\n]/).map(h=>h.trim()).filter(Boolean)}I==="gen"&&(o.mode=s.querySelector("[name=mode]").value),await b("libs",o),i(),wt(a),f("已保存")}}async function pn(t){let a=await T(".txt,.md,.json,text/plain,application/json");if(!a)return;let e=a.name.replace(/\.[^.]+$/,"");try{if(/\.json$/i.test(a.name)){let n=JSON.parse(await a.text()),o=un(n,e);if(!o.length)throw new Error("没有找到可导入的条目");for(let s of o)await b("libs",{id:j("l_"),type:I,name:s.name,body:s.body,keys:s.keys||[],createdAt:Date.now()});f(`导入 ${o.length} 条`)}else{let n=await a.text();await b("libs",{id:j("l_"),type:I,name:e,body:n.slice(0,6e4),keys:[],createdAt:Date.now()}),f("已导入")}wt(t)}catch(n){f("导入失败："+(n.message||n),4e3)}}function un(t,a){let e=[],n=(i,r,l)=>{r&&e.push({name:i||a,body:String(r),keys:l||[]})},o=t&&t.entries;if(o&&!Array.isArray(o)&&typeof o=="object"){for(let[i,r]of Object.entries(o)){let l=String(r.key||r.keys||"").split(",").map(p=>p.trim()).filter(Boolean);n(r.comment||i,r.content,l)}return e}if(Array.isArray(o)){for(let i of o){let r=Array.isArray(i.keys)?i.keys:String(i.key||"").split(",").map(l=>l.trim());n(i.comment||i.name,i.content,r.filter(Boolean))}return e}let s=Array.isArray(t)?t:t.items||[t];for(let i of s){if(typeof i=="string"){n(a,i);continue}n(i.name||i.title||a,i.body||i.content||i.text,i.keys||[])}return e}var ee={};K(ee,{mount:()=>fn});C();N();P();Q();yt();D();async function fn(t){t.innerHTML=`
+    <div class="screen">
+      <div class="topbar"><a class="icon-btn" href="#/home">‹</a><h1>立绘工坊</h1></div>
+      <div class="pad">
+        <p class="small muted" style="margin-bottom:10px">描述你想要的样子，AI 会挑发型、瞳色、配色和服装，再用代码画出来。画好可以存成角色。</p>
+        <div class="field"><label>描述</label>
+          <textarea class="textarea" id="desc" rows="3" placeholder="例如：古风少女，长发盘起，红瞳，穿深红汉服，神情安静"></textarea></div>
+        <div class="row"><button class="btn primary" id="go" style="flex:1">生成</button>
+          <button class="btn" id="lucky">随机一张</button></div>
+        <div id="preview" style="margin-top:16px;display:flex;justify-content:center"></div>
+        <div id="savebox" style="display:none;margin-top:12px">
+          <div class="field"><label>角色名</label><input class="input" id="cname" placeholder="给她起个名字"></div>
+          <button class="btn" id="save" style="width:100%">存成新角色</button>
+        </div>
+      </div>
+    </div>`;let a=null,e=document.getElementById("preview"),n=document.getElementById("savebox"),o=s=>{a=s,e.innerHTML=`<img src="${S(s)}" style="width:200px;border-radius:16px;background:#1d2230">`,n.style.display="block"};document.getElementById("lucky").onclick=()=>{let s=R[Math.floor(Math.random()*R.length)];o({seed:Math.floor(Math.random()*99999),gender:s.gender,hair:s.hair,outfit:s.outfit,palette:s.palette,accessory:s.accessory,eyeStyle:s.eyeStyle||"normal"})},document.getElementById("go").onclick=async()=>{let s=document.getElementById("desc").value.trim();if(!s)return f("先写一句描述");f("正在挑参数…",2e4);try{let i=await U("portrait"),r=await Y(`${i?i+`
+
+`:""}把下面的描述翻译成立绘参数，只输出 JSON：
+{"gender":"f/m","hair":0,"outfit":0,"palette":0,"eyeStyle":"normal","accessory":-1}
+hair: 0长直 1双马尾 2丸子 3短发 4狼尾 5卷发 6麻花辫 7偏分 8古风盘发 9高马尾
+outfit: 0圆领 1衬衫 2开衫 3卫衣 4西装 5立领 6汉服
+palette: 0-11；eyeStyle: normal/white/red/gold/green/violet；accessory: -1无 0耳环 1发饰 2眼镜
+描述：${s}`,{maxTokens:300}),l=J(r);o({seed:Math.floor(Math.random()*99999),gender:l.gender==="m"?"m":"f",hair:Number(l.hair)||0,outfit:Number(l.outfit)||0,palette:Number(l.palette)||0,eyeStyle:l.eyeStyle||"normal",accessory:l.accessory==null?-1:Number(l.accessory)}),f("画好了")}catch(i){f(i.message||"生成失败",4e3)}},document.getElementById("save").onclick=async()=>{if(!a)return;let s=document.getElementById("cname").value.trim()||"新角色",i=G({name:s,gender:a.gender,avatar:S(a),seed:a.seed,look:{hair:a.hair,outfit:a.outfit,palette:a.palette,accessory:a.accessory,eyeStyle:a.eyeStyle,expr:a.expr||0,bg:a.bg||0,mark:a.mark==null?-1:a.mark,hairAcc:a.hairAcc==null?-1:a.hairAcc},desc:document.getElementById("desc").value.trim(),source:"manual",tags:["工坊"]});await b("chars",i),f("已存为角色"),w("chars/catbox")}}var mn=[[/^home$/,Nt],[/^chars\/(catbox|tavern)$/,gt],[/^chat\/(.+)$/,Zt],[/^worlds$/,Wt],[/^world\/(.+)$/,et],[/^life$/,Xt],[/^settings$/,Yt],[/^lib$/,te],[/^studio$/,ee],[/^portraits$/,zGal]];async function yn(t){let a=document.getElementById("app");for(let[e,n]of mn){let o=t.match(e);if(o){try{await n.mount(a,...o.slice(1))}catch(s){console.error(s),a.innerHTML=`<div class="screen"><div class="empty"><span class="big">💥</span>页面出错了<br><span class="small">${String(s&&s.message||s)}</span><br><br><button class="btn" onclick="location.hash='#/home'">回首页</button></div></div>`}return}}location.hash="#/home"}function Ue(t){let a=document.getElementById("app");a.innerHTML=`<div class="screen"><div class="empty"><span class="big">🚫</span>${t}</div></div>`}async function hn(){if(St(),!("indexedDB"in window))return Ue('这个浏览器不支持 IndexedDB<br><span class="small">请换 Chrome / Edge，或关掉无痕模式</span>');try{await ft()}catch(t){return console.error(t),Ue('读不到本地存储<br><span class="small">用「文件」直接打开时会这样。请把它放到网址上（GitHub Pages / Cloudflare Pages）再打开</span>')}try{await ge()}catch(t){console.warn("初始化内置库失败",t)}try{await be()}catch(t){console.warn("初始化内置内容失败",t)}
+try{await zFillAll()}catch(t){console.warn("补齐立绘失败",t)}
+try{await zLoadLibs()}catch(t){console.warn("加载资料库失败",t)}se(yn)}hn();window.addEventListener("unhandledrejection",t=>{console.error("未处理的错误",t.reason)});})();
+
+</script>
+</body>
+</html>
